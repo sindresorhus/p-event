@@ -27,9 +27,13 @@ module.exports = (emitter, event, opts) => {
 			}
 		};
 
-		const rejectHandler = reason => {
+		const rejectHandler = function(reason){
 			cancel();
-			reject(reason);
+			if(opts.multiArgs){
+				reject(arguments);
+			}else{
+				reject(reason);
+			}
 		};
 
 		cancel = () => {
