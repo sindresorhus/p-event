@@ -18,20 +18,20 @@ module.exports = (emitter, event, opts) => {
 		addListener = addListener.bind(emitter);
 		removeListener = removeListener.bind(emitter);
 
-		const resolveHandler = function(value){
+		const resolveHandler = function (value) {
 			cancel();
-			if(opts.multiArgs){
-				resolve(arguments);
-			}else{
+			if (opts.multiArgs) {
+				resolve([].slice.apply(arguments));
+			} else {
 				resolve(value);
 			}
 		};
 
-		const rejectHandler = function(reason){
+		const rejectHandler = function (reason) {
 			cancel();
-			if(opts.multiArgs){
-				reject(arguments);
-			}else{
+			if (opts.multiArgs) {
+				reject([].slice.apply(arguments));
+			} else {
 				reject(reason);
 			}
 		};
