@@ -17,9 +17,9 @@ module.exports = (emitter, event, opts) => {
 		addListener = addListener.bind(emitter);
 		removeListener = removeListener.bind(emitter);
 
-		const resolveHandler = value => {
+		const resolveHandler = function(){
 			cancel();
-			resolve(value);
+			resolve(arguments);
 		};
 
 		const rejectHandler = reason => {
