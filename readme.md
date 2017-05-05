@@ -73,6 +73,35 @@ Default: `['error']`
 
 Events that will reject the promise.
 
+##### multiArgs
+
+Type: `boolean`<br>
+Default: `false`
+
+By default, the promisified function will only return the second argument from the callback, which works fine for most APIs. This option can be useful for modules like `kue` that return multiple arguments. Turning this on will make it return an array of all arguments from the callback, excluding the error argument, instead of just the second argument. This also applies to rejections, where it returns an array of all the callback arguments, including the error.
+
+**ES7**
+```js
+import kue from 'kue';
+import pEvent from 'p-event';
+
+const queue = kue.createQueue();
+(async () => {
+	const [id, type] = await pEvent(queue, 'job enqueue', { multiArgs: true });
+})();
+```
+**ES6**
+
+```js
+const kue = require('kue');
+const pEvent = require('p-event');
+
+const queue = kue.createQueue();
+pEvent(queue, 'job enqueue', { multiArgs: true }).then(result => {
+	const [id, type] = result;
+});
+```
+
 
 ## Before and after
 
