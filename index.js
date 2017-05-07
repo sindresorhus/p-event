@@ -4,7 +4,8 @@ module.exports = (emitter, event, opts) => {
 
 	const ret = new Promise((resolve, reject) => {
 		opts = Object.assign({
-			rejectionEvents: ['error']
+			rejectionEvents: ['error'],
+			multiArgs: false
 		}, opts);
 
 		let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
@@ -17,14 +18,24 @@ module.exports = (emitter, event, opts) => {
 		addListener = addListener.bind(emitter);
 		removeListener = removeListener.bind(emitter);
 
-		const resolveHandler = value => {
+		const resolveHandler = function (value) {
 			cancel();
-			resolve(value);
+
+			if (opts.multiArgs) {
+				resolve([].slice.apply(arguments));
+			} else {
+				resolve(value);
+			}
 		};
 
-		const rejectHandler = reason => {
+		const rejectHandler = function (reason) {
 			cancel();
-			reject(reason);
+
+			if (opts.multiArgs) {
+				reject([].slice.apply(arguments));
+			} else {
+				reject(reason);
+			}
 		};
 
 		cancel = () => {
