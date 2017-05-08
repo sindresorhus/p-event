@@ -4,6 +4,8 @@
 
 Useful when you need only one event emission and want to use it with promises or await it in an async function.
 
+If you want multiple individual events as they are emitted, this module is not for you, as a Promise is a single value. Instead, just continue using event callback or use [Observables](https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87).
+
 
 ## Install
 
@@ -78,17 +80,15 @@ Events that will reject the promise.
 Type: `boolean`<br>
 Default: `false`
 
-By default, the promisified function will only return the first argument from the callback, which works fine for most APIs. This option can be useful for modules like `kue` that return multiple arguments. Turning this on will make it return an array of all arguments from the callback, instead of just the first argument. This also applies to rejections.
+By default, the promisified function will only return the first argument from the event callback, which works fine for most APIs. This option can be useful for APIs that return multiple arguments in the callback. Turning this on will make it return an array of all arguments from the callback, instead of just the first argument. This also applies to rejections.
 
 Example:
 
 ```js
-const kue = require('kue');
 const pEvent = require('p-event');
+const emitter = require('./some-event-emitter');
 
-const queue = kue.createQueue();
-
-pEvent(queue, 'job enqueue', {multiArgs: true}).then(result => {
+pEvent(emitter, 'finish', {multiArgs: true}).then(result => {
 	const [id, type] = result;
 });
 ```
