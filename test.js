@@ -95,3 +95,28 @@ test('event to promise - error', async t => {
 
 	t.deepEqual(await m(emitter, 'error'), new Error('💩'));
 });
+
+test('`timeout` option rejects when short enough', async t => {
+	const emitter = new EventEmitter();
+	const timeout = 50;
+
+	delay(200).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+
+	await t.throws(m(emitter, '🦄', {
+		timeout
+	}), `Promise timed out after ${timeout} milliseconds`);
+});
+
+test('`timeout` option resolves when long enough', async t => {
+	const emitter = new EventEmitter();
+
+	delay(200).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+
+	t.is(await m(emitter, '🦄', {
+		timeout: 250
+	}), '🌈');
+});

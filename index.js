@@ -1,11 +1,15 @@
 'use strict';
+
+const pTimeout = require('p-timeout');
+
 module.exports = (emitter, event, opts) => {
 	let cancel;
 
 	const ret = new Promise((resolve, reject) => {
 		opts = Object.assign({
 			rejectionEvents: ['error'],
-			multiArgs: false
+			multiArgs: false,
+			timeout: 0
 		}, opts);
 
 		let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
@@ -54,6 +58,10 @@ module.exports = (emitter, event, opts) => {
 	});
 
 	ret.cancel = cancel;
+
+	if (typeof opts.timeout === 'number' && opts.timeout > 0) {
+		return pTimeout(ret, opts.timeout);
+	}
 
 	return ret;
 };
