@@ -93,6 +93,13 @@ pEvent(emitter, 'finish', {multiArgs: true}).then(result => {
 });
 ```
 
+##### timeout
+
+Type: `Number`<br>
+Default: `Infinity`
+
+Time in milliseconds before timing out.
+
 
 ## Before and after
 

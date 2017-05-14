@@ -1,4 +1,6 @@
 'use strict';
+const pTimeout = require('p-timeout');
+
 module.exports = (emitter, event, opts) => {
 	let cancel;
 
@@ -54,6 +56,10 @@ module.exports = (emitter, event, opts) => {
 	});
 
 	ret.cancel = cancel;
+
+	if (typeof opts.timeout === 'number') {
+		return pTimeout(ret, opts.timeout);
+	}
 
 	return ret;
 };
