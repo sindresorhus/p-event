@@ -1,6 +1,6 @@
 {
   "name": "p-event",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Promisify an event by waiting for it to be emitted",
   "license": "MIT",
   "repository": "sindresorhus/p-event",
