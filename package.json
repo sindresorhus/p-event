@@ -42,7 +42,8 @@
     "bluebird"
   ],
   "dependencies": {
-    "p-timeout": "^1.1.1"
+    "p-timeout": "^1.1.1",
+    "lodash.isfunction": "^3.0.8"
   },
   "devDependencies": {
     "ava": "*",

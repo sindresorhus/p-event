@@ -1,10 +1,15 @@
 'use strict';
 const pTimeout = require('p-timeout');
+const isFunction = require('lodash.isfunction');
 
 module.exports = (emitter, event, opts) => {
 	let cancel;
 
 	const ret = new Promise((resolve, reject) => {
+		if (isFunction(opts)) {
+			opts = {filter: opts};
+		}
+
 		opts = Object.assign({
 			rejectionEvents: ['error'],
 			multiArgs: false
@@ -21,6 +26,16 @@ module.exports = (emitter, event, opts) => {
 		removeListener = removeListener.bind(emitter);
 
 		const resolveHandler = function (value) {
+			if (opts.filter) {
+				if (opts.multiArgs) {
+					if (!opts.filter([].slice.apply(arguments))) {
+						return;
+					}
+				} else if (!opts.filter(value)) {
+					return;
+				}
+			}
+
 			cancel();
 
 			if (opts.multiArgs) {
