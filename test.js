@@ -120,3 +120,76 @@ test('`timeout` option resolves when long enough', async t => {
 		timeout: 250
 	}), '🌈');
 });
+
+test('filter function to match event', async t => {
+	const emitter = new EventEmitter();
+
+	delay(200).then(() => {
+		emitter.emit('🦄', 1);
+		emitter.emit('🦄', 2);
+		emitter.emit('🦄', 4);
+		emitter.emit('🦄', 3);
+	});
+
+	t.is(await m(emitter, '🦄', e => e >= 3), 4);
+});
+
+test('filter option to match event', async t => {
+	const emitter = new EventEmitter();
+
+	delay(200).then(() => {
+		emitter.emit('🦄', 1);
+		emitter.emit('🦄', 2);
+		emitter.emit('🦄', 4);
+		emitter.emit('🦄', 3);
+	});
+
+	t.is(await m(emitter, '🦄', {filter: e => e >= 3}), 4);
+});
+
+test('filter option caught with error', async t => {
+	const emitter = new EventEmitter();
+
+	delay(200).then(() => {
+		emitter.emit('🦄', 1);
+		emitter.emit('🦄', 2);
+		emitter.emit('error', new Error('💩'));
+		emitter.emit('🦄', 4);
+		emitter.emit('🦄', 3);
+	});
+
+	await t.throws(m(emitter, '🦄', {filter: e => e >= 3}), '💩');
+});
+
+test('filter option to match event with multiArgs', async t => {
+	const emitter = new EventEmitter();
+
+	delay(200).then(() => {
+		emitter.emit('🦄', 1, 1);
+		emitter.emit('🦄', 2, 2);
+		emitter.emit('🦄', 4, 3);
+		emitter.emit('🦄', 3, 4);
+	});
+
+	t.deepEqual(await m(emitter, '🦄', {
+		filter: es => es[0] >= 3 && es[1] >= es[0],
+		multiArgs: true
+	}), [3, 4]);
+});
+
+test('filter option returned with multiArgs', async t => {
+	const emitter = new EventEmitter();
+
+	delay(200).then(() => {
+		emitter.emit('🦄', 1, 1);
+		emitter.emit('🦄', 2, 2);
+		emitter.emit('error', 10000, '💩');
+		emitter.emit('🦄', 4, 3);
+		emitter.emit('🦄', 3, 4);
+	});
+
+	t.deepEqual(await m(emitter, 'error', {
+		filter: es => (es[0] > 9999) && (es[1] === '💩'),
+		multiArgs: true
+	}), [10000, '💩']);
+});

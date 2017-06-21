@@ -101,6 +101,23 @@ Default: `Infinity`
 Time in milliseconds before timing out.
 
 
+##### filter
+
+Type: `Function`<br>
+Default: None
+
+Filter function for accepting an event.
+
+```js
+const pEvent = require('p-event');
+const emitter = require('./some-event-emitter');
+
+pEvent(emitter, '🦄', e => e >= 3).then(result => {
+	// do something with first 🦄 event with value greater than or equal to 3
+});
+```
+
+
 ## Before and after
 
 ```js

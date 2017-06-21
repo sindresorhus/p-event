@@ -5,6 +5,10 @@ module.exports = (emitter, event, opts) => {
 	let cancel;
 
 	const ret = new Promise((resolve, reject) => {
+		if (typeof opts === 'function') {
+			opts = {filter: opts};
+		}
+
 		opts = Object.assign({
 			rejectionEvents: ['error'],
 			multiArgs: false
@@ -21,6 +25,14 @@ module.exports = (emitter, event, opts) => {
 		removeListener = removeListener.bind(emitter);
 
 		const resolveHandler = function (value) {
+			if (opts.multiArgs) {
+				value = [].slice.apply(arguments);
+			}
+
+			if (opts.filter && !opts.filter(value)) {
+				return;
+			}
+
 			cancel();
 
 			if (opts.multiArgs) {
