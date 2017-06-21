@@ -34,12 +34,7 @@ module.exports = (emitter, event, opts) => {
 			}
 
 			cancel();
-
-			if (opts.multiArgs) {
-				resolve([].slice.apply(arguments));
-			} else {
-				resolve(value);
-			}
+			resolve(value);
 		};
 
 		const rejectHandler = function (reason) {

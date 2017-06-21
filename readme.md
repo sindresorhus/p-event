@@ -43,6 +43,7 @@ pEvent(document, 'DOMContentLoaded').then(() => {
 ## API
 
 ### pEvent(emitter, event, [options])
+### pEvent(emitter, event, filter)
 
 Returns a `Promise` that is fulfilled when `emitter` emits an event matching `event`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
 
@@ -103,8 +104,7 @@ Time in milliseconds before timing out.
 
 ##### filter
 
-Type: `Function`<br>
-Default: None
+Type: `Function`
 
 Filter function for accepting an event.
 
@@ -112,8 +112,8 @@ Filter function for accepting an event.
 const pEvent = require('p-event');
 const emitter = require('./some-event-emitter');
 
-pEvent(emitter, '🦄', e => e >= 3).then(result => {
-	// do something with first 🦄 event with value greater than or equal to 3
+pEvent(emitter, '🦄', value => value > 3).then(result => {
+	// Do something with first 🦄 event with a value greater than 3
 });
 ```
 

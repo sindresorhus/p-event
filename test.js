@@ -131,7 +131,7 @@ test('filter function to match event', async t => {
 		emitter.emit('🦄', 3);
 	});
 
-	t.is(await m(emitter, '🦄', e => e >= 3), 4);
+	t.is(await m(emitter, '🦄', x => x >= 3), 4);
 });
 
 test('filter option to match event', async t => {
@@ -144,7 +144,9 @@ test('filter option to match event', async t => {
 		emitter.emit('🦄', 3);
 	});
 
-	t.is(await m(emitter, '🦄', {filter: e => e >= 3}), 4);
+	t.is(await m(emitter, '🦄', {
+		filter: x => x >= 3
+	}), 4);
 });
 
 test('filter option caught with error', async t => {
@@ -158,10 +160,12 @@ test('filter option caught with error', async t => {
 		emitter.emit('🦄', 3);
 	});
 
-	await t.throws(m(emitter, '🦄', {filter: e => e >= 3}), '💩');
+	await t.throws(m(emitter, '🦄', {
+		filter: x => x >= 3
+	}), '💩');
 });
 
-test('filter option to match event with multiArgs', async t => {
+test('filter option to match event with `multiArgs`', async t => {
 	const emitter = new EventEmitter();
 
 	delay(200).then(() => {
@@ -172,12 +176,12 @@ test('filter option to match event with multiArgs', async t => {
 	});
 
 	t.deepEqual(await m(emitter, '🦄', {
-		filter: es => es[0] >= 3 && es[1] >= es[0],
+		filter: x => x[0] >= 3 && x[1] >= x[0],
 		multiArgs: true
 	}), [3, 4]);
 });
 
-test('filter option returned with multiArgs', async t => {
+test('filter option returned with `multiArgs`', async t => {
 	const emitter = new EventEmitter();
 
 	delay(200).then(() => {
@@ -189,7 +193,7 @@ test('filter option returned with multiArgs', async t => {
 	});
 
 	t.deepEqual(await m(emitter, 'error', {
-		filter: es => (es[0] > 9999) && (es[1] === '💩'),
+		filter: x => (x[0] > 9999) && (x[1] === '💩'),
 		multiArgs: true
 	}), [10000, '💩']);
 });
