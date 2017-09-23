@@ -65,7 +65,13 @@ module.exports = (emitter, event, opts) => {
 	ret.cancel = cancel;
 
 	if (typeof opts.timeout === 'number') {
-		return pTimeout(ret, opts.timeout);
+		return pTimeout(ret, opts.timeout).catch(err => {
+			if (err instanceof pTimeout.TimeoutError) {
+				cancel();
+			}
+
+			throw err;
+		});
 	}
 
 	return ret;
