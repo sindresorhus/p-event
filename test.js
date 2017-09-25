@@ -107,6 +107,8 @@ test('`timeout` option rejects when short enough', async t => {
 	await t.throws(m(emitter, '🦄', {
 		timeout
 	}), `Promise timed out after ${timeout} milliseconds`);
+
+	t.is(emitter.listenerCount('🦄'), 0);
 });
 
 test('`timeout` option resolves when long enough', async t => {
