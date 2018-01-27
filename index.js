@@ -14,7 +14,7 @@ module.exports = (emitter, event, opts) => {
 			multiArgs: false
 		}, opts);
 
-		let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
+		let addListener = emitter.once || emitter.on || emitter.addListener || emitter.addEventListener;
 		let removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
 
 		if (!addListener || !removeListener) {
