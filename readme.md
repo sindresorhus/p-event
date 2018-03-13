@@ -4,6 +4,8 @@
 
 Useful when you need only one event emission and want to use it with promises or await it in an async function.
 
+It's works with any event API in Node.js and the browser (using a bundler).
+
 If you want multiple individual events as they are emitted, this module is not for you, as a Promise is a single value. Instead, just continue using event callback or use [Observables](https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87).
 
 
