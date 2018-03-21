@@ -62,17 +62,21 @@ module.exports = (emitter, event, opts) => {
 		}
 	});
 
-	ret.cancel = cancel;
-
 	if (typeof opts.timeout === 'number') {
-		return pTimeout(ret, opts.timeout).catch(err => {
+		const timeout = pTimeout(ret, opts.timeout).catch(err => {
 			if (err instanceof pTimeout.TimeoutError) {
 				cancel();
 			}
 
 			throw err;
 		});
+
+		timeout.cancel = cancel;
+
+		return timeout;
 	}
+
+	ret.cancel = cancel;
 
 	return ret;
 };
