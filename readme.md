@@ -12,7 +12,7 @@ If you want multiple individual events as they are emitted, this module is not f
 ## Install
 
 ```
-$ npm install --save p-event
+$ npm install p-event
 ```
 
 
@@ -22,23 +22,26 @@ $ npm install --save p-event
 const pEvent = require('p-event');
 const emitter = require('./some-event-emitter');
 
-pEvent(emitter, 'finish')
-	// Called when `emitter` emits a `finish` event
-	.then(result => {
+(async () => {
+	try {
+		await pEvent(emitter, 'finish');
+
+		// `emitter` emitted a `finish` event
 		console.log(result);
-	})
-	// Called when `emitter` emits an `error` event
-	.catch(error => {
+	} catch (error) {
+		// `emitter` emitted an `error` event
 		console.error(error);
-	});
+	}
+})();
 ```
 
 ```js
 const pEvent = require('p-event');
 
-pEvent(document, 'DOMContentLoaded').then(() => {
+(async () => {
+	await pEvent(document, 'DOMContentLoaded');
 	console.log('😎');
-});
+})();
 ```
 
 
@@ -91,9 +94,9 @@ Example:
 const pEvent = require('p-event');
 const emitter = require('./some-event-emitter');
 
-pEvent(emitter, 'finish', {multiArgs: true}).then(result => {
-	const [id, type] = result;
-});
+(async () => {
+	const [foo, bar] = await pEvent(emitter, 'finish', {multiArgs: true});
+})();
 ```
 
 ##### timeout
@@ -114,9 +117,10 @@ Filter function for accepting an event.
 const pEvent = require('p-event');
 const emitter = require('./some-event-emitter');
 
-pEvent(emitter, '🦄', value => value > 3).then(result => {
+(async () => {
+	const result = await pEvent(emitter, '🦄', value => value > 3);
 	// Do something with first 🦄 event with a value greater than 3
-});
+})();
 ```
 
 
@@ -158,12 +162,11 @@ async function getOpenReadStream(file) {
 	return stream;
 }
 
-getOpenReadStream('unicorn.txt')
-	.then(stream => {
-		console.log('File descriptor:', stream.fd);
-		stream.pipe(process.stdout);
-	})
-	.catch(console.error);
+(async () => {
+	const stream = await getOpenReadStream('unicorn.txt');
+	console.log('File descriptor:', stream.fd);
+	stream.pipe(process.stdout);
+})().catch(console.error);
 ```
 
 

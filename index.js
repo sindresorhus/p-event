@@ -1,18 +1,18 @@
 'use strict';
 const pTimeout = require('p-timeout');
 
-module.exports = (emitter, event, opts) => {
+module.exports = (emitter, event, options) => {
 	let cancel;
 
 	const ret = new Promise((resolve, reject) => {
-		if (typeof opts === 'function') {
-			opts = {filter: opts};
+		if (typeof options === 'function') {
+			options = {filter: options};
 		}
 
-		opts = Object.assign({
+		options = Object.assign({
 			rejectionEvents: ['error'],
 			multiArgs: false
-		}, opts);
+		}, options);
 
 		let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
 		let removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
@@ -24,12 +24,10 @@ module.exports = (emitter, event, opts) => {
 		addListener = addListener.bind(emitter);
 		removeListener = removeListener.bind(emitter);
 
-		const resolveHandler = function (value) {
-			if (opts.multiArgs) {
-				value = [].slice.apply(arguments);
-			}
+		const resolveHandler = (...args) => {
+			const value = options.multiArgs ? args : args[0];
 
-			if (opts.filter && !opts.filter(value)) {
+			if (options.filter && !options.filter(value)) {
 				return;
 			}
 
@@ -37,38 +35,31 @@ module.exports = (emitter, event, opts) => {
 			resolve(value);
 		};
 
-		const rejectHandler = function (reason) {
+		const rejectHandler = (...args) => {
 			cancel();
-
-			if (opts.multiArgs) {
-				reject([].slice.apply(arguments));
-			} else {
-				reject(reason);
-			}
+			reject(options.multiArgs ? args : args[0]);
 		};
 
 		cancel = () => {
 			removeListener(event, resolveHandler);
 
-			for (const rejectionEvent of opts.rejectionEvents) {
+			for (const rejectionEvent of options.rejectionEvents) {
 				removeListener(rejectionEvent, rejectHandler);
 			}
 		};
 
 		addListener(event, resolveHandler);
 
-		for (const rejectionEvent of opts.rejectionEvents) {
+		for (const rejectionEvent of options.rejectionEvents) {
 			addListener(rejectionEvent, rejectHandler);
 		}
 	});
 
 	ret.cancel = cancel;
 
-	if (typeof opts.timeout === 'number') {
-		const timeout = pTimeout(ret, opts.timeout);
-
+	if (typeof options.timeout === 'number') {
+		const timeout = pTimeout(ret, options.timeout);
 		timeout.cancel = cancel;
-
 		return timeout;
 	}
 
