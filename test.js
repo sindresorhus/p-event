@@ -67,6 +67,14 @@ test('`.cancel()` method', t => {
 	t.is(emitter.listenerCount('🦄'), 0);
 });
 
+test('`.cancel()` method with `timeout` option', t => {
+	const emitter = new EventEmitter();
+	const promise = m(emitter, '🦄', {timeout: 250});
+	t.is(emitter.listenerCount('🦄'), 1);
+	promise.cancel();
+	t.is(emitter.listenerCount('🦄'), 0);
+});
+
 test('error on incompatible emitter', async t => {
 	await t.throws(m({}, '🦄'), /not compatible/);
 });
