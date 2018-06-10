@@ -1,6 +1,8 @@
 'use strict';
 const pTimeout = require('p-timeout');
 
+const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator';
+
 module.exports = (emitter, event, options) => {
 	let cancel;
 
@@ -64,4 +66,126 @@ module.exports = (emitter, event, options) => {
 	}
 
 	return ret;
+};
+module.exports.iterator = (emitter, event, options) => {
+	if (typeof options === 'function') {
+		options = {filter: options};
+	}
+
+	options = Object.assign({
+		rejectionEvents: ['error'],
+		resolutionEvents: [],
+		multiArgs: false
+	}, options);
+
+	let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
+	let removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
+
+	if (!addListener || !removeListener) {
+		throw new TypeError('Emitter is not compatible');
+	}
+
+	addListener = addListener.bind(emitter);
+	removeListener = removeListener.bind(emitter);
+
+	let done = false;
+	let error;
+	let hasPendingError = false;
+	const nextQueue = [];
+	const valueQueue = [];
+
+	const valueHandler = (...args) => {
+		const value = options.multiArgs ? args : args[0];
+
+		if (nextQueue.length > 0) {
+			const {resolve} = nextQueue.shift();
+			return resolve({done: false, value});
+		}
+
+		valueQueue.push(value);
+	};
+
+	const cancel = () => {
+		done = true;
+		removeListener(event, valueHandler);
+
+		for (const rejectionEvent of options.rejectionEvents) {
+			// eslint-disable-next-line no-use-before-define
+			removeListener(rejectionEvent, rejectHandler);
+		}
+
+		for (const resolutionEvent of options.resolutionEvents) {
+			// eslint-disable-next-line no-use-before-define
+			removeListener(resolutionEvent, resolveHandler);
+		}
+
+		while (nextQueue.length > 0) {
+			const {resolve} = nextQueue.shift();
+			resolve({done: true, value: undefined});
+		}
+	};
+
+	const rejectHandler = (...args) => {
+		error = options.multiArgs ? args : args[0];
+
+		if (nextQueue.length > 0) {
+			const {reject} = nextQueue.shift();
+			reject(error);
+		} else {
+			hasPendingError = true;
+		}
+
+		cancel();
+	};
+
+	const resolveHandler = (...args) => {
+		const value = options.multiArgs ? args : args[0];
+
+		if (options.filter && !options.filter(value)) {
+			return;
+		}
+
+		if (nextQueue.length > 0) {
+			const {resolve} = nextQueue.shift();
+			resolve({done: true, value});
+		} else {
+			valueQueue.push(value);
+		}
+
+		cancel();
+	};
+
+	addListener(event, valueHandler);
+
+	for (const rejectionEvent of options.rejectionEvents) {
+		addListener(rejectionEvent, rejectHandler);
+	}
+
+	for (const resolutionEvent of options.resolutionEvents) {
+		addListener(resolutionEvent, resolveHandler);
+	}
+
+	return {
+		[symbolAsyncIterator]() {
+			return this;
+		},
+		next() {
+			if (valueQueue.length > 0) {
+				const value = valueQueue.shift();
+				return Promise.resolve({done: done && valueQueue.length === 0, value});
+			}
+			if (hasPendingError) {
+				hasPendingError = false;
+				return Promise.reject(error);
+			}
+			if (done) {
+				return Promise.resolve({done: true, value: undefined});
+			}
+			return new Promise((resolve, reject) => nextQueue.push({resolve, reject}));
+		},
+		return(value) {
+			cancel();
+			return {done, value};
+		}
+	};
 };
