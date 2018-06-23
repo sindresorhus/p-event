@@ -3,6 +3,20 @@ const pTimeout = require('p-timeout');
 
 const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator';
 
+const normalizeEmitter = emitter => {
+	const addListener = emitter.on || emitter.addListener || emitter.addEventListener;
+	const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
+
+	if (!addListener || !removeListener) {
+		throw new TypeError('Emitter is not compatible');
+	}
+
+	return {
+		addListener: addListener.bind(emitter),
+		removeListener: removeListener.bind(emitter)
+	};
+};
+
 module.exports = (emitter, event, options) => {
 	let cancel;
 
@@ -16,15 +30,7 @@ module.exports = (emitter, event, options) => {
 			multiArgs: false
 		}, options);
 
-		let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
-		let removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
-
-		if (!addListener || !removeListener) {
-			throw new TypeError('Emitter is not compatible');
-		}
-
-		addListener = addListener.bind(emitter);
-		removeListener = removeListener.bind(emitter);
+		const {addListener, removeListener} = normalizeEmitter(emitter);
 
 		const resolveHandler = (...args) => {
 			const value = options.multiArgs ? args : args[0];
@@ -78,15 +84,7 @@ module.exports.iterator = (emitter, event, options) => {
 		multiArgs: false
 	}, options);
 
-	let addListener = emitter.on || emitter.addListener || emitter.addEventListener;
-	let removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
-
-	if (!addListener || !removeListener) {
-		throw new TypeError('Emitter is not compatible');
-	}
-
-	addListener = addListener.bind(emitter);
-	removeListener = removeListener.bind(emitter);
+	const {addListener, removeListener} = normalizeEmitter(emitter);
 
 	let done = false;
 	let error;
