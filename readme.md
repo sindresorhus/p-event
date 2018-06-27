@@ -6,7 +6,7 @@ Useful when you need only one event emission and want to use it with promises or
 
 It's works with any event API in Node.js and the browser (using a bundler).
 
-If you want multiple individual events as they are emitted, this module is not for you, as a Promise is a single value. Instead, just continue using event callback or use [Observables](https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87).
+If you want multiple individual events as they are emitted, you can use the `pEvent.iterator()` method. [Observables](https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87) can be useful too.
 
 
 ## Install
@@ -17,6 +17,8 @@ $ npm install p-event
 
 
 ## Usage
+
+In Node.js:
 
 ```js
 const pEvent = require('p-event');
@@ -35,12 +37,31 @@ const emitter = require('./some-event-emitter');
 })();
 ```
 
+In the browser:
+
 ```js
 const pEvent = require('p-event');
 
 (async () => {
 	await pEvent(document, 'DOMContentLoaded');
 	console.log('😎');
+})();
+```
+
+Async iteration:
+
+```js
+const pEvent = require('p-event');
+const emitter = require('./some-event-emitter');
+
+(async () => {
+	const asyncIterator = pEvent.iterator(emitter, 'data', {
+		resolutionEvents: ['finish']
+	});
+
+	for await (const event of asyncIterator) {
+		console.log(event);
+	}
 })();
 ```
 
@@ -76,7 +97,7 @@ Type: `Object`
 
 ##### rejectionEvents
 
-Type: `Array`<br>
+Type: `string[]`<br>
 Default: `['error']`
 
 Events that will reject the promise.
@@ -101,7 +122,7 @@ const emitter = require('./some-event-emitter');
 
 ##### timeout
 
-Type: `Number`<br>
+Type: `number`<br>
 Default: `Infinity`
 
 Time in milliseconds before timing out.
@@ -122,6 +143,24 @@ const emitter = require('./some-event-emitter');
 	// Do something with first 🦄 event with a value greater than 3
 })();
 ```
+
+### pEvent.iterator(emitter, event, [options])
+### pEvent.iterator(emitter, event, filter)
+
+Returns an [async iterator](http://2ality.com/2016/10/asynchronous-iteration.html) that lets you asynchronously iterate over events of `event` emitted from `emitter`. The iterator ends when `emitter` emits an event matching any of the events defined in `resolutionEvents`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
+
+This method has the same arguments and options as `pEvent()` with the addition of the following options:
+
+#### options
+
+Type: `Object`
+
+##### resolutionEvents
+
+Type: `string[]`<br>
+Default: `[]`
+
+Events that will end the iterator.
 
 
 ## Before and after

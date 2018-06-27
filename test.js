@@ -207,3 +207,58 @@ test('filter option returned with `multiArgs`', async t => {
 		multiArgs: true
 	}), [10000, '💩']);
 });
+
+test('event to AsyncIterator', async t => {
+	const emitter = new EventEmitter();
+	const iterator = m.iterator(emitter, '🦄');
+
+	delay(50).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+	delay(100).then(() => {
+		emitter.emit('🦄', 'Something else.');
+	});
+	delay(150).then(() => {
+		emitter.emit('🦄', 'Some third thing.');
+	});
+
+	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
+});
+
+test('event to AsyncIterator (backpressure)', async t => {
+	const emitter = new EventEmitter();
+	const iterator = m.iterator(emitter, '🦄');
+
+	emitter.emit('🦄', '🌈');
+	emitter.emit('🦄', 'Something else.');
+	emitter.emit('🦄', 'Some third thing.');
+
+	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
+});
+
+test('error event rejects the next promise and finishes the iterator', async t => {
+	const emitter = new EventEmitter();
+	const iterator = m.iterator(emitter, '🦄');
+
+	delay(200).then(() => {
+		emitter.emit('error', new Error('💩'));
+	});
+
+	await t.throws(iterator.next(), '💩');
+	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
+test('resolve event resolves pending promises and finishes the iterator', async t => {
+	const emitter = new EventEmitter();
+	const iterator = m.iterator(emitter, '🦄', {resolutionEvents: ['end']});
+
+	delay(200).then(() => {
+		emitter.emit('end');
+	});
+
+	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
