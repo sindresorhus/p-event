@@ -26,7 +26,7 @@ const emitter = require('./some-event-emitter');
 
 (async () => {
 	try {
-		await pEvent(emitter, 'finish');
+		const result = await pEvent(emitter, 'finish');
 
 		// `emitter` emitted a `finish` event
 		console.log(result);
@@ -206,6 +206,35 @@ async function getOpenReadStream(file) {
 	console.log('File descriptor:', stream.fd);
 	stream.pipe(process.stdout);
 })().catch(console.error);
+```
+
+
+## Tip
+
+### Dealing with calls that resolve with an error code
+
+Some functions might use a single event for success and for certain errors. Promises make it easy to have combined error handler for both error events and successes containing values which represent errors.
+
+```js
+const pEvent = require('p-event');
+const emitter = require('./some-event-emitter');
+
+(async () => {
+	try {
+		const result = await pEvent(emitter, 'finish');
+
+		if (result === 'unwanted result') {
+			throw new Error('Emitter finished with an error');
+		}
+
+		// `emitter` emitted a `finish` event with an acceptible value
+		console.log(result);
+	} catch (error) {
+		// `emitter` emitted an `error` event or
+		// emitted a `finish` with 'unwanted result'
+		console.error(error);
+	}
+})();
 ```
 
 
