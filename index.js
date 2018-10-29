@@ -55,7 +55,7 @@ module.exports = (emitter, event, options) => {
 			items.push(value);
 
 			if (options.count === items.length) {
-				finish(resolve);
+				finish();
 			}
 		};
 
