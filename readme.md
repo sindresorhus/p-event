@@ -144,6 +144,42 @@ const emitter = require('./some-event-emitter');
 })();
 ```
 
+##### count
+
+Type: `number`<br>
+Default: `1`
+
+Tells how many times the event needs to be emitted. If set to `1`, return the result. If it's more than `1`, it returns an array.
+
+##### resolveImmediately
+
+Type: `boolean`<br>
+Default: `false`
+
+States if the promise should resolve immediately. If set to `true`, the promise returns an array. Emitting one of the `rejectionEvents` won't throw an error. Example:
+
+```js
+const emitter = new EventEmitter();
+const promise = pEvent(emitter, 'hello', {
+	resolveImmediately: true,
+	count: Infinity
+});
+const result = await promise;
+console.log(result); // => []
+
+emitter.emit('hello', 'Jack');
+console.log(result); // => ['Jack']
+
+emitter.emit('hello', 'Mark');
+console.log(result); // => ['Jack', 'Mark']
+
+// Stops listening
+emitter.emit('error', new Error(':('));
+
+emitter.emit('hello', 'John');
+console.log(result); // => ['Jack', 'Mark']
+```
+
 ### pEvent.iterator(emitter, event, [options])
 ### pEvent.iterator(emitter, event, filter)
 

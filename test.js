@@ -262,3 +262,37 @@ test('resolve event resolves pending promises and finishes the iterator', async 
 
 	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
+
+test('`count` option', async t => {
+	const emitter = new EventEmitter();
+
+	const promise = m(emitter, '🌂', {
+		count: 3
+	});
+
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌂', '🌞');
+
+	t.deepEqual(await promise, ['🌞', '🌞', '🌞']);
+});
+
+test('`resolveImmediately` option', async t => {
+	const emitter = new EventEmitter();
+
+	const promise = m(emitter, '🌂', {
+		resolveImmediately: true,
+		count: Infinity
+	});
+
+	const result = await promise;
+	t.deepEqual(result, []);
+
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌂', '🌞');
+
+	t.deepEqual(result, ['🌞', '🌞', '🌞', '🌞']);
+});

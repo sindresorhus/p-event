@@ -27,39 +27,59 @@ module.exports = (emitter, event, options) => {
 
 		options = Object.assign({
 			rejectionEvents: ['error'],
-			multiArgs: false
+			multiArgs: false,
+			count: 1,
+			resolveImmediately: false
 		}, options);
 
+		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
 
-		const resolveHandler = (...args) => {
+		const finish = () => {
+			cancel();
+
+			if (options.count === 1) {
+				resolve(items[0]);
+			} else {
+				resolve(items);
+			}
+		};
+
+		const onItem = (...args) => {
 			const value = options.multiArgs ? args : args[0];
 
 			if (options.filter && !options.filter(value)) {
 				return;
 			}
 
-			cancel();
-			resolve(value);
+			items.push(value);
+
+			if (options.count === items.length) {
+				finish(resolve);
+			}
 		};
 
-		const rejectHandler = (...args) => {
+		const rejectHandler = error => {
 			cancel();
-			reject(options.multiArgs ? args : args[0]);
+			reject(error);
 		};
 
 		cancel = () => {
-			removeListener(event, resolveHandler);
+			removeListener(event, onItem);
 
 			for (const rejectionEvent of options.rejectionEvents) {
 				removeListener(rejectionEvent, rejectHandler);
 			}
 		};
 
-		addListener(event, resolveHandler);
+		addListener(event, onItem);
 
 		for (const rejectionEvent of options.rejectionEvents) {
 			addListener(rejectionEvent, rejectHandler);
+		}
+
+		if (options.resolveImmediately) {
+			resolve(items);
 		}
 	});
 
@@ -73,6 +93,7 @@ module.exports = (emitter, event, options) => {
 
 	return ret;
 };
+
 module.exports.iterator = (emitter, event, options) => {
 	if (typeof options === 'function') {
 		options = {filter: options};
