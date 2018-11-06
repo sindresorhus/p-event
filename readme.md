@@ -144,19 +144,22 @@ const emitter = require('./some-event-emitter');
 })();
 ```
 
+### pEvent.multiple(emitter, event, options)
+
+With `pEvent.multiple()` there comes a few new options:
+
 ##### count
 
-Type: `number`<br>
-Default: `1`
+Type: `number`
 
-Tells how many times the event needs to be emitted. If set to `1`, return the result. If it's more than `1`, it returns an array.
+Tells how many times the event needs to be emitted.
 
 ##### resolveImmediately
 
 Type: `boolean`<br>
 Default: `false`
 
-States if the promise should resolve immediately. If set to `true`, the promise returns an array. Emitting one of the `rejectionEvents` won't throw an error. Example:
+States if the promise should resolve immediately. Emitting one of the `rejectionEvents` won't throw an error. Example:
 
 ```js
 const emitter = new EventEmitter();
