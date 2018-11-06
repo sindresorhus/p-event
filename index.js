@@ -85,11 +85,12 @@ module.exports = (emitter, event, options) => {
 		options = {filter: options};
 	}
 
-	const arrayPromise = multiple(emitter, event, {
-		...options,
+	options = Object.assign({}, options, {
 		count: 1,
 		resolveImmediately: false
 	});
+
+	const arrayPromise = multiple(emitter, event, options);
 
 	const promise = arrayPromise.then(array => array[0]);
 	promise.cancel = arrayPromise.cancel;
