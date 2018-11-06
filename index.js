@@ -17,33 +17,18 @@ const normalizeEmitter = emitter => {
 	};
 };
 
-module.exports = (emitter, event, options) => {
+const multiple = (emitter, event, options) => {
 	let cancel;
 
 	const ret = new Promise((resolve, reject) => {
-		if (typeof options === 'function') {
-			options = {filter: options};
-		}
-
 		options = Object.assign({
 			rejectionEvents: ['error'],
 			multiArgs: false,
-			count: 1,
 			resolveImmediately: false
 		}, options);
 
 		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
-
-		const finish = () => {
-			cancel();
-
-			if (options.count === 1) {
-				resolve(items[0]);
-			} else {
-				resolve(items);
-			}
-		};
 
 		const onItem = (...args) => {
 			const value = options.multiArgs ? args : args[0];
@@ -55,7 +40,8 @@ module.exports = (emitter, event, options) => {
 			items.push(value);
 
 			if (options.count === items.length) {
-				finish();
+				cancel();
+				resolve(items);
 			}
 		};
 
@@ -93,6 +79,25 @@ module.exports = (emitter, event, options) => {
 
 	return ret;
 };
+
+module.exports = (emitter, event, options) => {
+	if (typeof options === 'function') {
+		options = {filter: options};
+	}
+
+	const arrayPromise = multiple(emitter, event, {
+		...options,
+		count: 1,
+		resolveImmediately: false
+	});
+
+	const promise = arrayPromise.then(array => array[0]);
+	promise.cancel = arrayPromise.cancel;
+
+	return promise;
+};
+
+module.exports.multiple = multiple;
 
 module.exports.iterator = (emitter, event, options) => {
 	if (typeof options === 'function') {
