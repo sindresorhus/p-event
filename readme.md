@@ -155,7 +155,7 @@ This method has the same arguments and options as `pEvent()` with the addition o
 Type: `Object`
 
 ##### count
-
+*Required*<br>
 Type: `number`
 
 The number of times the event needs to be emitted before the promise resolves.
