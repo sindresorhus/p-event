@@ -165,7 +165,7 @@ The number of times the event needs to be emitted before the promise resolves.
 Type: `boolean`<br>
 Default: `false`
 
-States if the promise should resolve immediately. Emitting one of the `rejectionEvents` won't throw an error.
+Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error.
 
 Example:
 
