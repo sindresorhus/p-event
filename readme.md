@@ -146,7 +146,9 @@ const emitter = require('./some-event-emitter');
 
 ### pEvent.multiple(emitter, event, options)
 
-Wait for multiple event emissions.
+Wait for multiple event emissions. Returns an array.
+
+**Note**: the array will be mutated when the event is emitted.
 
 This method has the same arguments and options as `pEvent()` with the addition of the following options:
 
