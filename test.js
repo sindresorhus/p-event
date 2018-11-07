@@ -278,7 +278,7 @@ test('.multiple()', async t => {
 	t.deepEqual(await promise, ['🌞', '🌞', '🌞']);
 });
 
-test('.multiple() - the `resolveImmediately` option', async t => {
+test('.multiple() - `resolveImmediately` option', async t => {
 	const emitter = new EventEmitter();
 
 	const promise = m.multiple(emitter, '🌂', {
