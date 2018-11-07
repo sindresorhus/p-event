@@ -18,15 +18,18 @@ const normalizeEmitter = emitter => {
 };
 
 const multiple = (emitter, event, options) => {
+	options = Object.assign({
+		rejectionEvents: ['error'],
+		multiArgs: false,
+		resolveImmediately: false
+	}, options);
+
+	if (isNaN(options.count) || options.count < 1) {
+		throw new TypeError('`count` option should be a number greater than 1');
+	}
+
 	let cancel;
-
 	const ret = new Promise((resolve, reject) => {
-		options = Object.assign({
-			rejectionEvents: ['error'],
-			multiArgs: false,
-			resolveImmediately: false
-		}, options);
-
 		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
 
