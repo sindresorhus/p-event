@@ -146,41 +146,55 @@ const emitter = require('./some-event-emitter');
 
 ### pEvent.multiple(emitter, event, options)
 
-With `pEvent.multiple()` there comes a few new options:
+Wait for multiple event emissions.
+
+This method has the same arguments and options as `pEvent()` with the addition of the following options:
+
+#### options
+
+Type: `Object`
 
 ##### count
 
 Type: `number`
 
-Tells how many times the event needs to be emitted.
+The number of times the event needs to be emitted before the promise resolves.
 
 ##### resolveImmediately
 
 Type: `boolean`<br>
 Default: `false`
 
-States if the promise should resolve immediately. Emitting one of the `rejectionEvents` won't throw an error. Example:
+States if the promise should resolve immediately. Emitting one of the `rejectionEvents` won't throw an error.
+
+Example:
 
 ```js
 const emitter = new EventEmitter();
-const promise = pEvent(emitter, 'hello', {
+
+const promise = pEvent.multiple(emitter, 'hello', {
 	resolveImmediately: true,
 	count: Infinity
 });
+
 const result = await promise;
-console.log(result); // => []
+console.log(result);
+// => []
 
 emitter.emit('hello', 'Jack');
-console.log(result); // => ['Jack']
+console.log(result);
+// => ['Jack']
 
 emitter.emit('hello', 'Mark');
-console.log(result); // => ['Jack', 'Mark']
+console.log(result);
+// => ['Jack', 'Mark']
 
 // Stops listening
-emitter.emit('error', new Error(':('));
+emitter.emit('error', new Error('😿'));
 
 emitter.emit('hello', 'John');
-console.log(result); // => ['Jack', 'Mark']
+console.log(result);
+// => ['Jack', 'Mark']
 ```
 
 ### pEvent.iterator(emitter, event, [options])
