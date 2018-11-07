@@ -179,22 +179,22 @@ const promise = pEvent.multiple(emitter, 'hello', {
 
 const result = await promise;
 console.log(result);
-// => []
+//=> []
 
 emitter.emit('hello', 'Jack');
 console.log(result);
-// => ['Jack']
+//=> ['Jack']
 
 emitter.emit('hello', 'Mark');
 console.log(result);
-// => ['Jack', 'Mark']
+//=> ['Jack', 'Mark']
 
 // Stops listening
 emitter.emit('error', new Error('😿'));
 
 emitter.emit('hello', 'John');
 console.log(result);
-// => ['Jack', 'Mark']
+//=> ['Jack', 'Mark']
 ```
 
 ### pEvent.iterator(emitter, event, [options])
