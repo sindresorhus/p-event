@@ -148,8 +148,6 @@ const emitter = require('./some-event-emitter');
 
 Wait for multiple event emissions. Returns an array.
 
-**Note**: The returned array will be mutated when the event is emitted.
-
 This method has the same arguments and options as `pEvent()` with the addition of the following options:
 
 #### options
@@ -169,6 +167,8 @@ Type: `boolean`<br>
 Default: `false`
 
 Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error.
+
+**Note**: The returned array will be mutated when the event is emitted.
 
 Example:
 

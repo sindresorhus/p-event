@@ -18,18 +18,18 @@ const normalizeEmitter = emitter => {
 };
 
 const multiple = (emitter, event, options) => {
-	options = Object.assign({
-		rejectionEvents: ['error'],
-		multiArgs: false,
-		resolveImmediately: false
-	}, options);
-
-	if (!(options.count > 1 && (options.count === Infinity || Number.isInteger(options.count))) {
-		throw new TypeError('`count` option should be a number greater than 1');
-	}
-
 	let cancel;
 	const ret = new Promise((resolve, reject) => {
+		options = Object.assign({
+			rejectionEvents: ['error'],
+			multiArgs: false,
+			resolveImmediately: false
+		}, options);
+
+		if (!(options.count >= 0 && (options.count === Infinity || Number.isInteger(options.count)))) {
+			throw new TypeError('The `count` option should be at least 0 or more');
+		}
+
 		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
 

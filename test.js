@@ -297,8 +297,8 @@ test('.multiple() - `resolveImmediately` option', async t => {
 	t.deepEqual(result, ['🌞', '🌞', '🌞', '🌞']);
 });
 
-test('`count` option should be a number greater than 1', t => {
-	t.throws(() => m.multiple(null, null, {
-		count: 0
-	}), '`count` option should be a number greater than 1');
+test('`count` option should be a zero or more', async t => {
+	await t.throws(m.multiple(null, null, {
+		count: -1
+	}), 'The `count` option should be at least 0 or more');
 });
