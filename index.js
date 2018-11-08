@@ -24,7 +24,7 @@ const multiple = (emitter, event, options) => {
 		resolveImmediately: false
 	}, options);
 
-	if (isNaN(options.count) || options.count < 1) {
+	if (!(options.count > 1 && (options.count === Infinity || Number.isInteger(options.count))) {
 		throw new TypeError('`count` option should be a number greater than 1');
 	}
 
