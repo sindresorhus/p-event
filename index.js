@@ -17,49 +17,58 @@ const normalizeEmitter = emitter => {
 	};
 };
 
-module.exports = (emitter, event, options) => {
+const multiple = (emitter, event, options) => {
 	let cancel;
-
 	const ret = new Promise((resolve, reject) => {
-		if (typeof options === 'function') {
-			options = {filter: options};
-		}
-
 		options = Object.assign({
 			rejectionEvents: ['error'],
-			multiArgs: false
+			multiArgs: false,
+			resolveImmediately: false
 		}, options);
 
+		if (!(options.count >= 0 && (options.count === Infinity || Number.isInteger(options.count)))) {
+			throw new TypeError('The `count` option should be at least 0 or more');
+		}
+
+		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
 
-		const resolveHandler = (...args) => {
+		const onItem = (...args) => {
 			const value = options.multiArgs ? args : args[0];
 
 			if (options.filter && !options.filter(value)) {
 				return;
 			}
 
-			cancel();
-			resolve(value);
+			items.push(value);
+
+			if (options.count === items.length) {
+				cancel();
+				resolve(items);
+			}
 		};
 
-		const rejectHandler = (...args) => {
+		const rejectHandler = error => {
 			cancel();
-			reject(options.multiArgs ? args : args[0]);
+			reject(error);
 		};
 
 		cancel = () => {
-			removeListener(event, resolveHandler);
+			removeListener(event, onItem);
 
 			for (const rejectionEvent of options.rejectionEvents) {
 				removeListener(rejectionEvent, rejectHandler);
 			}
 		};
 
-		addListener(event, resolveHandler);
+		addListener(event, onItem);
 
 		for (const rejectionEvent of options.rejectionEvents) {
 			addListener(rejectionEvent, rejectHandler);
+		}
+
+		if (options.resolveImmediately) {
+			resolve(items);
 		}
 	});
 
@@ -73,6 +82,27 @@ module.exports = (emitter, event, options) => {
 
 	return ret;
 };
+
+module.exports = (emitter, event, options) => {
+	if (typeof options === 'function') {
+		options = {filter: options};
+	}
+
+	options = Object.assign({}, options, {
+		count: 1,
+		resolveImmediately: false
+	});
+
+	const arrayPromise = multiple(emitter, event, options);
+
+	const promise = arrayPromise.then(array => array[0]);
+	promise.cancel = arrayPromise.cancel;
+
+	return promise;
+};
+
+module.exports.multiple = multiple;
+
 module.exports.iterator = (emitter, event, options) => {
 	if (typeof options === 'function') {
 		options = {filter: options};
