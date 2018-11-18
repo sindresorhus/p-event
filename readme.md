@@ -168,7 +168,7 @@ Default: `false`
 
 Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error.
 
-**Note**: The returned array will be mutated when the event is emitted.
+**Note**: The returned array will be mutated when an event is emitted.
 
 Example:
 
