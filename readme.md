@@ -283,7 +283,7 @@ const emitter = require('./some-event-emitter');
 			throw new Error('Emitter finished with an error');
 		}
 
-		// `emitter` emitted a `finish` event with an acceptible value
+		// `emitter` emitted a `finish` event with an acceptable value
 		console.log(result);
 	} catch (error) {
 		// `emitter` emitted an `error` event or
