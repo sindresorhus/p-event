@@ -45,8 +45,8 @@
 		"p-timeout": "^2.0.1"
 	},
 	"devDependencies": {
-		"ava": "*",
+		"ava": "^1.0.1",
 		"delay": "^3.0.0",
-		"xo": "*"
+		"xo": "^0.23.0"
 	}
 }
