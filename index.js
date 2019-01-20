@@ -138,12 +138,10 @@ module.exports.iterator = (emitter, event, options) => {
 		removeListener(event, valueHandler);
 
 		for (const rejectionEvent of options.rejectionEvents) {
-			// eslint-disable-next-line no-use-before-define
 			removeListener(rejectionEvent, rejectHandler);
 		}
 
 		for (const resolutionEvent of options.resolutionEvents) {
-			// eslint-disable-next-line no-use-before-define
 			removeListener(resolutionEvent, resolveHandler);
 		}
 
@@ -202,13 +200,16 @@ module.exports.iterator = (emitter, event, options) => {
 				const value = valueQueue.shift();
 				return Promise.resolve({done: done && valueQueue.length === 0, value});
 			}
+
 			if (hasPendingError) {
 				hasPendingError = false;
 				return Promise.reject(error);
 			}
+
 			if (done) {
 				return Promise.resolve({done: true, value: undefined});
 			}
+
 			return new Promise((resolve, reject) => nextQueue.push({resolve, reject}));
 		},
 		return(value) {
