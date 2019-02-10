@@ -88,9 +88,9 @@ Should have either a `.on()`/`.addListener()`/`.addEventListener()` and `.off()`
 
 #### event
 
-Type: `string` or `string[]`
+Type: `string | string[]`
 
-Name(s) of the event to listen to.
+Name of the event or events to listen to.
 
 If the same event is defined both here and in `rejectionEvents`, this one takes priority.
 
