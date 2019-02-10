@@ -13,6 +13,22 @@ test('event to promise', async t => {
 	t.is(await pEvent(emitter, '🦄'), '🌈');
 });
 
+test('event to promise with multiple event names', async t => {
+	const emitter = new EventEmitter();
+
+	delay(100).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+
+	t.is(await pEvent(emitter, ['🦄', '🌈']), '🌈');
+
+	delay(100).then(() => {
+		emitter.emit('🌈', '🦄');
+	});
+
+	t.is(await pEvent(emitter, ['🦄', '🌈']), '🦄');
+});
+
 test('error event rejects the promise', async t => {
 	const emitter = new EventEmitter();
 
@@ -227,6 +243,25 @@ test('event to AsyncIterator', async t => {
 	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
 });
 
+test('event to AsyncIterator with multiple event names', async t => {
+	const emitter = new EventEmitter();
+	const iterator = pEvent.iterator(emitter, ['🦄', '🌈']);
+
+	delay(50).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+	delay(100).then(() => {
+		emitter.emit('🌈', 'Something else.');
+	});
+	delay(150).then(() => {
+		emitter.emit('🦄', 'Some third thing.');
+	});
+
+	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
+});
+
 test('event to AsyncIterator (backpressure)', async t => {
 	const emitter = new EventEmitter();
 	const iterator = pEvent.iterator(emitter, '🦄');
@@ -276,6 +311,21 @@ test('.multiple()', async t => {
 	emitter.emit('🌂', '🌞');
 
 	t.deepEqual(await promise, ['🌞', '🌞', '🌞']);
+});
+
+test('.multiple() with an array of event names', async t => {
+	const emitter = new EventEmitter();
+
+	const promise = pEvent.multiple(emitter, ['🌂', '🌞'], {
+		count: 3
+	});
+
+	emitter.emit('🌂', '🌞');
+	emitter.emit('🌞', '🌂');
+	emitter.emit('🌞', '🌂');
+	emitter.emit('🌂', '🌞');
+
+	t.deepEqual(await promise, ['🌞', '🌂', '🌂']);
 });
 
 test('.multiple() - `resolveImmediately` option', async t => {

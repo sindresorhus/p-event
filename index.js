@@ -17,6 +17,8 @@ const normalizeEmitter = emitter => {
 	};
 };
 
+const normalizeEvents = event => Array.isArray(event) ? event : [event];
+
 const multiple = (emitter, event, options) => {
 	let cancel;
 	const ret = new Promise((resolve, reject) => {
@@ -29,6 +31,9 @@ const multiple = (emitter, event, options) => {
 		if (!(options.count >= 0 && (options.count === Infinity || Number.isInteger(options.count)))) {
 			throw new TypeError('The `count` option should be at least 0 or more');
 		}
+
+		// Allow multiple events
+		const events = normalizeEvents(event);
 
 		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
@@ -54,14 +59,18 @@ const multiple = (emitter, event, options) => {
 		};
 
 		cancel = () => {
-			removeListener(event, onItem);
+			for (const event of events) {
+				removeListener(event, onItem);
+			}
 
 			for (const rejectionEvent of options.rejectionEvents) {
 				removeListener(rejectionEvent, rejectHandler);
 			}
 		};
 
-		addListener(event, onItem);
+		for (const event of events) {
+			addListener(event, onItem);
+		}
 
 		for (const rejectionEvent of options.rejectionEvents) {
 			addListener(rejectionEvent, rejectHandler);
@@ -108,6 +117,9 @@ module.exports.iterator = (emitter, event, options) => {
 		options = {filter: options};
 	}
 
+	// Allow multiple events
+	const events = normalizeEvents(event);
+
 	options = Object.assign({
 		rejectionEvents: ['error'],
 		resolutionEvents: [],
@@ -135,7 +147,9 @@ module.exports.iterator = (emitter, event, options) => {
 
 	const cancel = () => {
 		done = true;
-		removeListener(event, valueHandler);
+		for (const event of events) {
+			removeListener(event, valueHandler);
+		}
 
 		for (const rejectionEvent of options.rejectionEvents) {
 			removeListener(rejectionEvent, rejectHandler);
@@ -181,7 +195,9 @@ module.exports.iterator = (emitter, event, options) => {
 		cancel();
 	};
 
-	addListener(event, valueHandler);
+	for (const event of events) {
+		addListener(event, valueHandler);
+	}
 
 	for (const rejectionEvent of options.rejectionEvents) {
 		addListener(rejectionEvent, rejectHandler);

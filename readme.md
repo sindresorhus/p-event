@@ -73,6 +73,9 @@ const emitter = require('./some-event-emitter');
 
 Returns a `Promise` that is fulfilled when `emitter` emits an event matching `event`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
 
+**Note**: `event` is a string for a single event type, for example, `'data'`. To listen on multiple
+events, pass an array of strings, such as `['started', 'stopped']`.
+
 The returned promise has a `.cancel()` method, which when called, removes the event listeners and causes the promise to never be settled.
 
 #### emitter
@@ -85,9 +88,9 @@ Should have either a `.on()`/`.addListener()`/`.addEventListener()` and `.off()`
 
 #### event
 
-Type: `string`
+Type: `string | string[]`
 
-Name of the event to listen to.
+Name of the event or events to listen to.
 
 If the same event is defined both here and in `rejectionEvents`, this one takes priority.
 
