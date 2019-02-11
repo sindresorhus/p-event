@@ -284,6 +284,61 @@ test('event to AsyncIterator (backpressure)', async t => {
 	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
 });
 
+test('event to AsyncIterator - option limit', async t => {
+	const emitter = new EventEmitter();
+	const iterator = pEvent.iterator(emitter, '🦄', {limit: 2});
+
+	delay(50).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+	delay(100).then(() => {
+		emitter.emit('🦄', 'Something else.');
+	});
+	delay(150).then(() => {
+		emitter.emit('🦄', 'Some third thing.');
+	});
+
+	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
+test('event to AsyncIterator (backpressure - limit)', async t => {
+	const emitter = new EventEmitter();
+	const iterator = pEvent.iterator(emitter, '🦄', {limit: 2});
+
+	emitter.emit('🦄', '🌈');
+	emitter.emit('🦄', 'Something else.');
+	emitter.emit('🦄', 'Some third thing.');
+
+	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
+test('event to AsyncIterator - option limit = 0', async t => {
+	const emitter = new EventEmitter();
+	const iterator = pEvent.iterator(emitter, '🦄', {limit: 0});
+
+	delay(50).then(() => {
+		emitter.emit('🦄', '🌈');
+	});
+
+	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
+test('`limit` option should be a non-negative integer or Infinity', async t => {
+	await t.throwsAsync(() => pEvent.iterator(null, null, {
+		limit: 'a'
+	}), 'The `limit` option should be a non-negative integer or Infinity');
+	await t.throwsAsync(() => pEvent.iterator(null, null, {
+		limit: -100
+	}), 'The `limit` option should be a non-negative integer or Infinity');
+	await t.throwsAsync(() => pEvent.iterator(null, null, {
+		limit: 3.5
+	}), 'The `limit` option should be a non-negative integer or Infinity');
+});
+
 test('error event rejects the next promise and finishes the iterator', async t => {
 	const emitter = new EventEmitter();
 	const iterator = pEvent.iterator(emitter, '🦄');

@@ -130,7 +130,6 @@ Default: `Infinity`
 
 Time in milliseconds before timing out.
 
-
 ##### filter
 
 Type: `Function`
@@ -213,6 +212,13 @@ This method has the same arguments and options as `pEvent()` with the addition o
 #### options
 
 Type: `Object`
+
+##### limit
+
+Type: `number` *(non-negative integer)*<br>
+Default: `Infinity`
+
+Maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. This option is useful to paginate events, for example, fetching 10 events per page.
 
 ##### resolutionEvents
 

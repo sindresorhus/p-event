@@ -123,8 +123,33 @@ module.exports.iterator = (emitter, event, options) => {
 	options = Object.assign({
 		rejectionEvents: ['error'],
 		resolutionEvents: [],
+		limit: Infinity,
 		multiArgs: false
 	}, options);
+
+	const {limit} = options;
+	if (
+		!(
+			limit >= 0 &&
+			(limit === Infinity || Number.isInteger(limit))
+		)
+	) {
+		return Promise.reject(new TypeError('The `limit` option should be a non-negative integer or Infinity'));
+	}
+
+	if (limit === 0) {
+		// Return an empty async iterator to avoid any further cost
+		return {
+			[Symbol.asyncIterator]() {
+				return this;
+			},
+			next() {
+				return Promise.resolve({done: true, value: undefined});
+			}
+		};
+	}
+
+	let isLimitReached = false;
 
 	const {addListener, removeListener} = normalizeEmitter(emitter);
 
@@ -133,16 +158,27 @@ module.exports.iterator = (emitter, event, options) => {
 	let hasPendingError = false;
 	const nextQueue = [];
 	const valueQueue = [];
+	let eventCount = 0;
 
 	const valueHandler = (...args) => {
+		eventCount++;
+		isLimitReached = eventCount === limit;
 		const value = options.multiArgs ? args : args[0];
 
 		if (nextQueue.length > 0) {
 			const {resolve} = nextQueue.shift();
-			return resolve({done: false, value});
+			resolve({done: false, value});
+			if (isLimitReached) {
+				cancel();
+			}
+
+			return;
 		}
 
 		valueQueue.push(value);
+		if (isLimitReached) {
+			cancel();
+		}
 	};
 
 	const cancel = () => {
@@ -214,7 +250,7 @@ module.exports.iterator = (emitter, event, options) => {
 		next() {
 			if (valueQueue.length > 0) {
 				const value = valueQueue.shift();
-				return Promise.resolve({done: done && valueQueue.length === 0, value});
+				return Promise.resolve({done: done && valueQueue.length === 0 && !isLimitReached, value});
 			}
 
 			if (hasPendingError) {
