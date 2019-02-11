@@ -163,11 +163,14 @@ module.exports.iterator = (emitter, event, options) => {
 	const valueHandler = (...args) => {
 		eventCount++;
 		isLimitReached = eventCount === limit;
+
 		const value = options.multiArgs ? args : args[0];
 
 		if (nextQueue.length > 0) {
 			const {resolve} = nextQueue.shift();
+
 			resolve({done: false, value});
+
 			if (isLimitReached) {
 				cancel();
 			}
@@ -176,6 +179,7 @@ module.exports.iterator = (emitter, event, options) => {
 		}
 
 		valueQueue.push(value);
+
 		if (isLimitReached) {
 			cancel();
 		}

@@ -328,15 +328,19 @@ test('event to AsyncIterator - option limit = 0', async t => {
 });
 
 test('`limit` option should be a non-negative integer or Infinity', async t => {
+	const errorMessage = 'The `limit` option should be a non-negative integer or Infinity';
+
 	await t.throwsAsync(() => pEvent.iterator(null, null, {
 		limit: 'a'
-	}), 'The `limit` option should be a non-negative integer or Infinity');
+	}), errorMessage);
+
 	await t.throwsAsync(() => pEvent.iterator(null, null, {
 		limit: -100
-	}), 'The `limit` option should be a non-negative integer or Infinity');
+	}), errorMessage);
+
 	await t.throwsAsync(() => pEvent.iterator(null, null, {
 		limit: 3.5
-	}), 'The `limit` option should be a non-negative integer or Infinity');
+	}), errorMessage);
 });
 
 test('error event rejects the next promise and finishes the iterator', async t => {
