@@ -243,6 +243,15 @@ test('event to AsyncIterator', async t => {
 	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
 });
 
+test('event to AsyncIterator implements return', async t => {
+	const emitter = new EventEmitter();
+	const iterator = pEvent.iterator(emitter, '🦄');
+
+	t.true(iterator.return('x') instanceof Promise);
+	t.deepEqual(await iterator.return('y'), {done: true, value: 'y'});
+	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
 test('event to AsyncIterator with multiple event names', async t => {
 	const emitter = new EventEmitter();
 	const iterator = pEvent.iterator(emitter, ['🦄', '🌈']);

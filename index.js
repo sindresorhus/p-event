@@ -230,7 +230,7 @@ module.exports.iterator = (emitter, event, options) => {
 		},
 		return(value) {
 			cancel();
-			return {done, value};
+			return Promise.resolve({done, value});
 		}
 	};
 };
