@@ -128,13 +128,9 @@ module.exports.iterator = (emitter, event, options) => {
 	}, options);
 
 	const {limit} = options;
-	if (
-		!(
-			limit >= 0 &&
-			(limit === Infinity || Number.isInteger(limit))
-		)
-	) {
-		return Promise.reject(new TypeError('The `limit` option should be a non-negative integer or Infinity'));
+	const isValidLimit = limit >= 0 && (limit === Infinity || Number.isInteger(limit));
+	if (!isValidLimit) {
+		throw new TypeError('The `limit` option should be a non-negative integer or Infinity');
 	}
 
 	if (limit === 0) {

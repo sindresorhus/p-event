@@ -327,18 +327,18 @@ test('event to AsyncIterator - option limit = 0', async t => {
 	t.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('`limit` option should be a non-negative integer or Infinity', async t => {
+test('`limit` option should be a non-negative integer or Infinity', t => {
 	const errorMessage = 'The `limit` option should be a non-negative integer or Infinity';
 
-	await t.throwsAsync(() => pEvent.iterator(null, null, {
+	t.throws(() => pEvent.iterator(null, null, {
 		limit: 'a'
 	}), errorMessage);
 
-	await t.throwsAsync(() => pEvent.iterator(null, null, {
+	t.throws(() => pEvent.iterator(null, null, {
 		limit: -100
 	}), errorMessage);
 
-	await t.throwsAsync(() => pEvent.iterator(null, null, {
+	t.throws(() => pEvent.iterator(null, null, {
 		limit: 3.5
 	}), errorMessage);
 });
