@@ -22,11 +22,12 @@ const normalizeEvents = event => Array.isArray(event) ? event : [event];
 const multiple = (emitter, event, options) => {
 	let cancel;
 	const ret = new Promise((resolve, reject) => {
-		options = Object.assign({
+		options = {
 			rejectionEvents: ['error'],
 			multiArgs: false,
-			resolveImmediately: false
-		}, options);
+			resolveImmediately: false,
+			...options
+		};
 
 		if (!(options.count >= 0 && (options.count === Infinity || Number.isInteger(options.count)))) {
 			throw new TypeError('The `count` option should be at least 0 or more');
@@ -97,14 +98,14 @@ module.exports = (emitter, event, options) => {
 		options = {filter: options};
 	}
 
-	options = Object.assign({}, options, {
+	options = {
+		...options,
 		count: 1,
 		resolveImmediately: false
-	});
+	};
 
 	const arrayPromise = multiple(emitter, event, options);
-
-	const promise = arrayPromise.then(array => array[0]);
+	const promise = arrayPromise.then(array => array[0]); // eslint-disable-line promise/prefer-await-to-then
 	promise.cancel = arrayPromise.cancel;
 
 	return promise;
@@ -120,12 +121,13 @@ module.exports.iterator = (emitter, event, options) => {
 	// Allow multiple events
 	const events = normalizeEvents(event);
 
-	options = Object.assign({
+	options = {
 		rejectionEvents: ['error'],
 		resolutionEvents: [],
 		limit: Infinity,
-		multiArgs: false
-	}, options);
+		multiArgs: false,
+		...options
+	};
 
 	const {limit} = options;
 	const isValidLimit = limit >= 0 && (limit === Infinity || Number.isInteger(limit));
@@ -139,13 +141,14 @@ module.exports.iterator = (emitter, event, options) => {
 			[Symbol.asyncIterator]() {
 				return this;
 			},
-			next() {
-				return Promise.resolve({done: true, value: undefined});
+			async next() {
+				return {
+					done: true,
+					value: undefined
+				};
 			}
 		};
 	}
-
-	let isLimitReached = false;
 
 	const {addListener, removeListener} = normalizeEmitter(emitter);
 
@@ -155,6 +158,7 @@ module.exports.iterator = (emitter, event, options) => {
 	const nextQueue = [];
 	const valueQueue = [];
 	let eventCount = 0;
+	let isLimitReached = false;
 
 	const valueHandler = (...args) => {
 		eventCount++;
@@ -247,26 +251,32 @@ module.exports.iterator = (emitter, event, options) => {
 		[symbolAsyncIterator]() {
 			return this;
 		},
-		next() {
+		async next() {
 			if (valueQueue.length > 0) {
 				const value = valueQueue.shift();
-				return Promise.resolve({done: done && valueQueue.length === 0 && !isLimitReached, value});
+				return {
+					done: done && valueQueue.length === 0 && !isLimitReached,
+					value
+				};
 			}
 
 			if (hasPendingError) {
 				hasPendingError = false;
-				return Promise.reject(error);
+				throw error;
 			}
 
 			if (done) {
-				return Promise.resolve({done: true, value: undefined});
+				return {
+					done: true,
+					value: undefined
+				};
 			}
 
 			return new Promise((resolve, reject) => nextQueue.push({resolve, reject}));
 		},
-		return(value) {
+		async return(value) {
 			cancel();
-			return Promise.resolve({done, value});
+			return {done, value};
 		}
 	};
 };
