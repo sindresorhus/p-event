@@ -13,10 +13,11 @@
 		"node": ">=8"
 	},
 	"scripts": {
-		"test": "xo && ava"
+		"test": "xo && ava && tsd-check"
 	},
 	"files": [
-		"index.js"
+		"index.js",
+		"index.d.ts"
 	],
 	"keywords": [
 		"promise",
@@ -45,8 +46,10 @@
 		"p-timeout": "^2.0.1"
 	},
 	"devDependencies": {
+		"@types/node": "^11.9.5",
 		"ava": "^1.2.1",
 		"delay": "^4.1.0",
+		"tsd-check": "^0.3.0",
 		"xo": "^0.24.0"
 	}
 }
