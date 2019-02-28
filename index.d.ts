@@ -36,12 +36,12 @@ declare function pEvent<EmittedType, EmittedTypeRest = EmittedType>(
 	options: MultiArgumentsOptions<EmittedType | EmittedTypeRest>
 ): CancelablePromise<(EmittedType | EmittedTypeRest)[]>;
 declare function pEvent<EmittedType>(
-	emitter: Emitter<EmittedType, any>,
+	emitter: Emitter<EmittedType, unknown>,
 	event: string | symbol | (string | symbol)[],
 	filter: FilterFunction<EmittedType>
 ): CancelablePromise<EmittedType>;
 declare function pEvent<EmittedType>(
-	emitter: Emitter<EmittedType, any>,
+	emitter: Emitter<EmittedType, unknown>,
 	event: string | symbol | (string | symbol)[],
 	options?: Options<EmittedType>
 ): CancelablePromise<EmittedType>;
@@ -57,7 +57,7 @@ export function multiple<EmittedType, EmittedTypeRest = EmittedType>(
 	options: MultipleMultiArgumentsOptions<EmittedType | EmittedTypeRest>
 ): CancelablePromise<(EmittedType | EmittedTypeRest)[][]>;
 export function multiple<EmittedType>(
-	emitter: Emitter<EmittedType, any>,
+	emitter: Emitter<EmittedType, unknown>,
 	event: string | symbol | (string | symbol)[],
 	options: MultipleOptions<EmittedType>
 ): CancelablePromise<EmittedType[]>;
@@ -71,12 +71,12 @@ export function iterator<EmittedType, EmittedTypeRest = EmittedType>(
 	options: IteratorMultiArgumentsOptions<EmittedType | EmittedTypeRest>
 ): AsyncIterableIterator<(EmittedType | EmittedTypeRest)[]>;
 export function iterator<EmittedType>(
-	emitter: Emitter<EmittedType, any>,
+	emitter: Emitter<EmittedType, unknown>,
 	event: string | symbol | (string | symbol)[],
 	filter: FilterFunction<EmittedType>
 ): AsyncIterableIterator<EmittedType>;
 export function iterator<EmittedType>(
-	emitter: Emitter<EmittedType, any>,
+	emitter: Emitter<EmittedType, unknown>,
 	event: string | symbol | (string | symbol)[],
 	options?: IteratorOptions<EmittedType>
 ): AsyncIterableIterator<EmittedType>;
