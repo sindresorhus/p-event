@@ -1,35 +1,38 @@
-/// <reference types="node"/>
-
-import {expectType} from 'tsd-check';
-import pEvent, {multiple, iterator, CancelablePromise} from '.';
 import {EventEmitter} from 'events';
 import * as fs from 'fs';
+import {expectType} from 'tsd-check';
+import pEvent, {multiple, iterator, CancelablePromise} from '.';
 
 class NodeEmitter extends EventEmitter {
 	on(event: 'finish', listener: (number: number, string: string) => void) {
 		return this;
 	}
+
 	addListener(
 		event: 'finish',
 		listener: (number: number, string: string) => void
 	) {
 		return this;
 	}
+
 	addEventListener(
 		event: 'finish',
 		listener: (number: number, string: string) => void
 	) {
 		return this;
 	}
+
 	off(event: 'finish', listener: (number: number, string: string) => void) {
 		return this;
 	}
+
 	removeListener(
 		event: 'finish',
 		listener: (number: number, string: string) => void
 	) {
 		return this;
 	}
+
 	removeEventListener(
 		event: 'finish',
 		listener: (number: number, string: string) => void

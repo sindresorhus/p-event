@@ -87,7 +87,7 @@ export interface Options<EmittedType> {
 	 *
 	 * @default ['error']
 	 */
-	rejectionEvents?: (string | symbol)[];
+	readonly rejectionEvents?: (string | symbol)[];
 
 	/**
 	 * By default, the promisified function will only return the first argument from the event callback, which works fine for most APIs. This option can be useful for APIs that return multiple arguments in the callback. Turning this on will make it return an array of all arguments from the callback, instead of just the first argument. This also applies to rejections.
@@ -100,17 +100,17 @@ export interface Options<EmittedType> {
 	 * const emitter = require('./some-event-emitter');
 	 *
 	 * (async () => {
-	 *    const [foo, bar] = await pEvent(emitter, 'finish', {multiArgs: true});
+	 * 	const [foo, bar] = await pEvent(emitter, 'finish', {multiArgs: true});
 	 * })();
 	 */
-	multiArgs?: boolean;
+	readonly multiArgs?: boolean;
 
 	/**
 	 * Time in milliseconds before timing out.
 	 *
 	 * @default Infinity
 	 */
-	timeout?: number;
+	readonly timeout?: number;
 
 	/**
 	 * Filter function for accepting an event.
@@ -121,23 +121,22 @@ export interface Options<EmittedType> {
 	 * const emitter = require('./some-event-emitter');
 	 *
 	 * (async () => {
-	 *     const result = await pEvent(emitter, '🦄', value => value > 3);
-	 *     // Do something with first 🦄 event with a value greater than 3
+	 * 	const result = await pEvent(emitter, '🦄', value => value > 3);
+	 * 	// Do something with first 🦄 event with a value greater than 3
 	 * })();
 	 */
-	filter?: FilterFunction<EmittedType>;
+	readonly filter?: FilterFunction<EmittedType>;
 }
 
-export interface MultiArgumentsOptions<EmittedType>
-	extends Options<EmittedType> {
-	multiArgs: true;
+export interface MultiArgumentsOptions<EmittedType> extends Options<EmittedType> {
+	readonly multiArgs: true;
 }
 
 export interface MultipleOptions<EmittedType> extends Options<EmittedType> {
 	/**
 	 * The number of times the event needs to be emitted before the promise resolves.
 	 */
-	count: number;
+	readonly count: number;
 
 	/**
 	 * Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error.
@@ -149,8 +148,8 @@ export interface MultipleOptions<EmittedType> extends Options<EmittedType> {
 	 * const emitter = new EventEmitter();
 	 *
 	 * const promise = multiple(emitter, 'hello', {
-	 *     resolveImmediately: true,
-	 *     count: Infinity
+	 * 	resolveImmediately: true,
+	 * 	count: Infinity
 	 * });
 	 *
 	 * const result = await promise;
@@ -172,12 +171,11 @@ export interface MultipleOptions<EmittedType> extends Options<EmittedType> {
 	 * console.log(result);
 	 * //=> ['Jack', 'Mark']
 	 */
-	resolveImmediately?: boolean;
+	readonly resolveImmediately?: boolean;
 }
 
-export interface MultipleMultiArgumentsOptions<EmittedType>
-	extends MultipleOptions<EmittedType> {
-	multiArgs: true;
+export interface MultipleMultiArgumentsOptions<EmittedType> extends MultipleOptions<EmittedType> {
+	readonly multiArgs: true;
 }
 
 export interface IteratorOptions<EmittedType> extends Options<EmittedType> {

@@ -155,7 +155,7 @@ module.exports.iterator = (emitter, event, options) => {
 
 	const {addListener, removeListener} = normalizeEmitter(emitter);
 
-	let done = false;
+	let isDone = false;
 	let error;
 	let hasPendingError = false;
 	const nextQueue = [];
@@ -189,7 +189,7 @@ module.exports.iterator = (emitter, event, options) => {
 	};
 
 	const cancel = () => {
-		done = true;
+		isDone = true;
 		for (const event of events) {
 			removeListener(event, valueHandler);
 		}
@@ -258,7 +258,7 @@ module.exports.iterator = (emitter, event, options) => {
 			if (valueQueue.length > 0) {
 				const value = valueQueue.shift();
 				return {
-					done: done && valueQueue.length === 0 && !isLimitReached,
+					done: isDone && valueQueue.length === 0 && !isLimitReached,
 					value
 				};
 			}
@@ -268,7 +268,7 @@ module.exports.iterator = (emitter, event, options) => {
 				throw error;
 			}
 
-			if (done) {
+			if (isDone) {
 				return {
 					done: true,
 					value: undefined
@@ -279,7 +279,10 @@ module.exports.iterator = (emitter, event, options) => {
 		},
 		async return(value) {
 			cancel();
-			return {done, value};
+			return {
+				done: isDone,
+				value
+			};
 		}
 	};
 };
