@@ -93,7 +93,7 @@ const multiple = (emitter, event, options) => {
 	return ret;
 };
 
-module.exports = (emitter, event, options) => {
+const pEvent = (emitter, event, options) => {
 	if (typeof options === 'function') {
 		options = {filter: options};
 	}
@@ -110,6 +110,9 @@ module.exports = (emitter, event, options) => {
 
 	return promise;
 };
+
+module.exports = pEvent;
+module.exports.default = pEvent;
 
 module.exports.multiple = multiple;
 
