@@ -75,7 +75,7 @@ expectType<CancelablePromise<number>>(
 expectType<CancelablePromise<number>>(
 	pEvent(new NodeEmitter(), 'finish', {filter: value => value > 3})
 );
-expectType<CancelablePromise<(string | number)[]>>(
+expectType<CancelablePromise<[number, string]>>(
 	pEvent(new NodeEmitter(), 'finish', {multiArgs: true})
 );
 
@@ -90,7 +90,7 @@ expectType<CancelablePromise<number[]>>(
 		count: Infinity
 	})
 );
-expectType<CancelablePromise<(string | number)[][]>>(
+expectType<CancelablePromise<[number, string][]>>(
 	multiple(new NodeEmitter(), 'hello', {
 		count: Infinity,
 		multiArgs: true
@@ -110,7 +110,7 @@ expectType<AsyncIterableIterator<number>>(
 expectType<AsyncIterableIterator<number>>(
 	iterator(new NodeEmitter(), 'finish', {resolutionEvents: ['finish']})
 );
-expectType<AsyncIterableIterator<(string | number)[]>>(
+expectType<AsyncIterableIterator<[number, string]>>(
 	iterator(new NodeEmitter(), 'finish', {multiArgs: true})
 );
 
