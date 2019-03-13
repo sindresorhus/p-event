@@ -1,13 +1,13 @@
 /// <reference lib="esnext"/>
 
-export type AddRemoveListener<Args extends any[]> = (
+export type AddRemoveListener<Arguments extends unknown[]> = (
 	event: string | symbol,
 	listener: (
-		...args: Args,
+		...args: Arguments,
 	) => void
 ) => void;
 
-export interface Emitter<EmittedType extends any[]> {
+export interface Emitter<EmittedType extends unknown[]> {
 	on?: AddRemoveListener<EmittedType>;
 	addListener?: AddRemoveListener<EmittedType>;
 	addEventListener?: AddRemoveListener<EmittedType>;
@@ -16,7 +16,7 @@ export interface Emitter<EmittedType extends any[]> {
 	removeEventListener?: AddRemoveListener<EmittedType>;
 }
 
-export type FilterFunction<ElementType extends any[]> = (... args: ElementType) => boolean;
+export type FilterFunction<ElementType extends unknown[]> = (...args: ElementType) => boolean;
 
 export interface CancelablePromise<ResolveType> extends Promise<ResolveType> {
 	cancel(): void;
@@ -29,7 +29,7 @@ export interface CancelablePromise<ResolveType> extends Promise<ResolveType> {
  * @param event - Name of the event or events to listen to. If the same event is defined both here and in `rejectionEvents`, this one takes priority. **Note**: `event` is a string for a single event type, for example, `'data'`. To listen on multiple events, pass an array of strings, such as `['started', 'stopped']`.
  * @returns A `Promise` that is fulfilled when emitter emits an event matching `event`, or rejects if emitter emits any of the events defined in the `rejectionEvents` option. The returned promise has a `.cancel()` method, which when called, removes the event listeners and causes the promise to never be settled.
  */
-declare function pEvent<EmittedType extends any[]>(
+declare function pEvent<EmittedType extends unknown[]>(
 	emitter: Emitter<EmittedType>,
 	event: string | symbol | (string | symbol)[],
 	options: MultiArgumentsOptions<EmittedType>
@@ -50,7 +50,7 @@ export default pEvent;
 /**
  * Wait for multiple event emissions. Returns an array.
  */
-export function multiple<EmittedType extends any[]>(
+export function multiple<EmittedType extends unknown[]>(
 	emitter: Emitter<EmittedType>,
 	event: string | symbol | (string | symbol)[],
 	options: MultipleMultiArgumentsOptions<EmittedType>
@@ -64,7 +64,7 @@ export function multiple<EmittedType>(
 /**
  * @returns An [async iterator](http://2ality.com/2016/10/asynchronous-iteration.html) that lets you asynchronously iterate over events of `event` emitted from `emitter`. The iterator ends when `emitter` emits an event matching any of the events defined in `resolutionEvents`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
  */
-export function iterator<EmittedType extends any[]>(
+export function iterator<EmittedType extends unknown[]>(
 	emitter: Emitter<EmittedType>,
 	event: string | symbol | (string | symbol)[],
 	options: IteratorMultiArgumentsOptions<EmittedType>
@@ -80,7 +80,7 @@ export function iterator<EmittedType>(
 	options?: IteratorOptions<[EmittedType]>
 ): AsyncIterableIterator<EmittedType>;
 
-export interface Options<EmittedType extends any[]> {
+export interface Options<EmittedType extends unknown[]> {
 	/**
 	 * Events that will reject the promise.
 	 *
@@ -127,11 +127,11 @@ export interface Options<EmittedType extends any[]> {
 	readonly filter?: FilterFunction<EmittedType>;
 }
 
-export interface MultiArgumentsOptions<EmittedType extends any[]> extends Options<EmittedType> {
+export interface MultiArgumentsOptions<EmittedType extends unknown[]> extends Options<EmittedType> {
 	readonly multiArgs: true;
 }
 
-export interface MultipleOptions<EmittedType extends any[]> extends Options<EmittedType> {
+export interface MultipleOptions<EmittedType extends unknown[]> extends Options<EmittedType> {
 	/**
 	 * The number of times the event needs to be emitted before the promise resolves.
 	 */
@@ -173,11 +173,11 @@ export interface MultipleOptions<EmittedType extends any[]> extends Options<Emit
 	readonly resolveImmediately?: boolean;
 }
 
-export interface MultipleMultiArgumentsOptions<EmittedType extends any[]> extends MultipleOptions<EmittedType> {
+export interface MultipleMultiArgumentsOptions<EmittedType extends unknown[]> extends MultipleOptions<EmittedType> {
 	readonly multiArgs: true;
 }
 
-export interface IteratorOptions<EmittedType extends any[]> extends Options<EmittedType> {
+export interface IteratorOptions<EmittedType extends unknown[]> extends Options<EmittedType> {
 	/**
 	 * Maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. This option is useful to paginate events, for example, fetching 10 events per page.
 	 *
@@ -193,7 +193,7 @@ export interface IteratorOptions<EmittedType extends any[]> extends Options<Emit
 	resolutionEvents?: (string | symbol)[];
 }
 
-export interface IteratorMultiArgumentsOptions<EmittedType extends any[]>
+export interface IteratorMultiArgumentsOptions<EmittedType extends unknown[]>
 	extends IteratorOptions<EmittedType> {
 	multiArgs: true;
 }
