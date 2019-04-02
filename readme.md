@@ -175,6 +175,8 @@ Whether to resolve the promise immediately. Emitting one of the `rejectionEvents
 Example:
 
 ```js
+const pEvent = require('p-event');
+
 const emitter = new EventEmitter();
 
 const promise = pEvent.multiple(emitter, 'hello', {
