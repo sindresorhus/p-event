@@ -1,7 +1,9 @@
+/// <reference lib="dom"/>
 import {EventEmitter} from 'events';
 import * as fs from 'fs';
-import {expectType} from 'tsd-check';
-import pEvent, {multiple, iterator, CancelablePromise} from '.';
+import {expectType} from 'tsd';
+import pEvent = require('.');
+import {multiple, iterator, CancelablePromise} from '.';
 
 class NodeEmitter extends EventEmitter {
 	on(event: 'finish', listener: (number: number, string: string) => void) {

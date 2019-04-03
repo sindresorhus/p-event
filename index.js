@@ -112,6 +112,7 @@ const pEvent = (emitter, event, options) => {
 };
 
 module.exports = pEvent;
+// TODO: Remove this for the next major release
 module.exports.default = pEvent;
 
 module.exports.multiple = multiple;
