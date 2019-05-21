@@ -3,7 +3,7 @@
 declare namespace pEvent {
 	type AddRemoveListener<EventName extends string | symbol, Arguments extends unknown[]> = (
 		event: EventName,
-		listener: (...args: Arguments) => void
+		listener: (...arguments: Arguments) => void
 	) => void;
 
 	interface Emitter<EventName extends string | symbol, EmittedType extends unknown[]> {
@@ -16,7 +16,7 @@ declare namespace pEvent {
 	}
 
 	type FilterFunction<ElementType extends unknown[]> = (
-		...args: ElementType
+		...arguments: ElementType
 	) => boolean;
 
 	interface CancelablePromise<ResolveType> extends Promise<ResolveType> {
@@ -29,7 +29,7 @@ declare namespace pEvent {
 
 		@default ['error']
 		*/
-		readonly rejectionEvents?: (string | symbol)[];
+		readonly rejectionEvents?: ReadonlyArray<string | symbol>;
 
 		/**
 		By default, the promisified function will only return the first argument from the event callback, which works fine for most APIs. This option can be useful for APIs that return multiple arguments in the callback. Turning this on will make it return an array of all arguments from the callback, instead of just the first argument. This also applies to rejections.
@@ -142,7 +142,7 @@ declare namespace pEvent {
 
 		@default []
 		*/
-		resolutionEvents?: (string | symbol)[];
+		resolutionEvents?: ReadonlyArray<string | symbol>;
 	}
 
 	interface IteratorMultiArgumentsOptions<EmittedType extends unknown[]>
@@ -186,17 +186,17 @@ declare const pEvent: {
 	*/
 	<EventName extends string | symbol, EmittedType extends unknown[]>(
 		emitter: pEvent.Emitter<EventName, EmittedType>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		options: pEvent.MultiArgumentsOptions<EmittedType>
 	): pEvent.CancelablePromise<EmittedType>;
 	<EventName extends string | symbol, EmittedType>(
 		emitter: pEvent.Emitter<EventName, [EmittedType]>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		filter: pEvent.FilterFunction<[EmittedType]>
 	): pEvent.CancelablePromise<EmittedType>;
 	<EventName extends string | symbol, EmittedType>(
 		emitter: pEvent.Emitter<EventName, [EmittedType]>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		options?: pEvent.Options<[EmittedType]>
 	): pEvent.CancelablePromise<EmittedType>;
 
@@ -205,12 +205,12 @@ declare const pEvent: {
 	*/
 	multiple<EventName extends string | symbol, EmittedType extends unknown[]>(
 		emitter: pEvent.Emitter<EventName, EmittedType>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		options: pEvent.MultipleMultiArgumentsOptions<EmittedType>
 	): pEvent.CancelablePromise<EmittedType[]>;
 	multiple<EventName extends string | symbol, EmittedType>(
 		emitter: pEvent.Emitter<EventName, [EmittedType]>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		options: pEvent.MultipleOptions<[EmittedType]>
 	): pEvent.CancelablePromise<EmittedType[]>;
 
@@ -235,17 +235,17 @@ declare const pEvent: {
 	*/
 	iterator<EventName extends string | symbol, EmittedType extends unknown[]>(
 		emitter: pEvent.Emitter<EventName, EmittedType>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		options: pEvent.IteratorMultiArgumentsOptions<EmittedType>
 	): AsyncIterableIterator<EmittedType>;
 	iterator<EventName extends string | symbol, EmittedType>(
 		emitter: pEvent.Emitter<EventName, [EmittedType]>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		filter: pEvent.FilterFunction<[EmittedType]>
 	): AsyncIterableIterator<EmittedType>;
 	iterator<EventName extends string | symbol, EmittedType>(
 		emitter: pEvent.Emitter<EventName, [EmittedType]>,
-		event: string | symbol | (string | symbol)[],
+		event: string | symbol | ReadonlyArray<string | symbol>,
 		options?: pEvent.IteratorOptions<[EmittedType]>
 	): AsyncIterableIterator<EmittedType>;
 
