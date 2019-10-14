@@ -82,6 +82,24 @@ test('`multiArgs` option on reject', async t => {
 	}), ['💩', '💩']);
 });
 
+test(' `multiArgs` and `rejectionEvents` options on reject', async t => {
+	const emitter = new EventEmitter();
+
+	(async () => {
+		await delay(200);
+		emitter.emit('error', '💩', '💩');
+	})();
+
+	try {
+		await pEvent(emitter, '🦄', {
+			multiArgs: true,
+			rejectionEvents: ['error']
+		});
+	} catch (error) {
+		t.deepEqual(error, ['💩', '💩']);
+	}
+});
+
 test('`.cancel()` method', t => {
 	const emitter = new EventEmitter();
 	const promise = pEvent(emitter, '🦄');

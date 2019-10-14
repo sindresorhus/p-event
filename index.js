@@ -54,9 +54,9 @@ const multiple = (emitter, event, options) => {
 			}
 		};
 
-		const rejectHandler = error => {
+		const rejectHandler = (...args) => {
 			cancel();
-			reject(error);
+			reject(options.multiArgs ? args : args[0]);
 		};
 
 		cancel = () => {
