@@ -17,7 +17,7 @@ const normalizeEmitter = emitter => {
 	};
 };
 
-const normalizeEvents = event => Array.isArray(event) ? event : [event];
+const toArray = value => Array.isArray(value) ? value : [value];
 
 const multiple = (emitter, event, options) => {
 	let cancel;
@@ -34,7 +34,7 @@ const multiple = (emitter, event, options) => {
 		}
 
 		// Allow multiple events
-		const events = normalizeEvents(event);
+		const events = toArray(event);
 
 		const items = [];
 		const {addListener, removeListener} = normalizeEmitter(emitter);
