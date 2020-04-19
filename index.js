@@ -123,7 +123,7 @@ module.exports.iterator = (emitter, event, options) => {
 	}
 
 	// Allow multiple events
-	const events = normalizeEvents(event);
+	const events = toArray(event);
 
 	options = {
 		rejectionEvents: ['error'],

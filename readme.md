@@ -1,4 +1,4 @@
-# p-event [![Build Status](https://travis-ci.org/sindresorhus/p-event.svg?branch=master)](https://travis-ci.org/sindresorhus/p-event)
+# p-event [![Build Status](https://travis-ci.com/sindresorhus/p-event.svg?branch=master)](https://travis-ci.com/sindresorhus/p-event)
 
 > Promisify an event by waiting for it to be emitted
 
@@ -8,13 +8,11 @@ It's works with any event API in Node.js and the browser (using a bundler).
 
 If you want multiple individual events as they are emitted, you can use the `pEvent.iterator()` method. [Observables](https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87) can be useful too.
 
-
 ## Install
 
 ```
 $ npm install p-event
 ```
-
 
 ## Usage
 
@@ -65,10 +63,9 @@ const emitter = require('./some-event-emitter');
 })();
 ```
 
-
 ## API
 
-### pEvent(emitter, event, [options])
+### pEvent(emitter, event, options?)
 ### pEvent(emitter, event, filter)
 
 Returns a `Promise` that is fulfilled when `emitter` emits an event matching `event`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
@@ -80,7 +77,7 @@ The returned promise has a `.cancel()` method, which when called, removes the ev
 
 #### emitter
 
-Type: `Object`
+Type: `object`
 
 Event emitter object.
 
@@ -96,18 +93,18 @@ If the same event is defined both here and in `rejectionEvents`, this one takes 
 
 #### options
 
-Type: `Object`
+Type: `object`
 
 ##### rejectionEvents
 
-Type: `string[]`<br>
+Type: `string[]`\
 Default: `['error']`
 
 Events that will reject the promise.
 
 ##### multiArgs
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `false`
 
 By default, the promisified function will only return the first argument from the event callback, which works fine for most APIs. This option can be useful for APIs that return multiple arguments in the callback. Turning this on will make it return an array of all arguments from the callback, instead of just the first argument. This also applies to rejections.
@@ -125,7 +122,7 @@ const emitter = require('./some-event-emitter');
 
 ##### timeout
 
-Type: `number`<br>
+Type: `number`\
 Default: `Infinity`
 
 Time in milliseconds before timing out.
@@ -154,18 +151,18 @@ This method has the same arguments and options as `pEvent()` with the addition o
 
 #### options
 
-Type: `Object`
+Type: `object`
 
 ##### count
 
-*Required*<br>
+*Required*\
 Type: `number`
 
 The number of times the event needs to be emitted before the promise resolves.
 
 ##### resolveImmediately
 
-Type: `boolean`<br>
+Type: `boolean`\
 Default: `false`
 
 Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error.
@@ -204,31 +201,30 @@ console.log(result);
 //=> ['Jack', 'Mark']
 ```
 
-### pEvent.iterator(emitter, event, [options])
+### pEvent.iterator(emitter, event, options?)
 ### pEvent.iterator(emitter, event, filter)
 
-Returns an [async iterator](http://2ality.com/2016/10/asynchronous-iteration.html) that lets you asynchronously iterate over events of `event` emitted from `emitter`. The iterator ends when `emitter` emits an event matching any of the events defined in `resolutionEvents`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
+Returns an [async iterator](https://2ality.com/2016/10/asynchronous-iteration.html) that lets you asynchronously iterate over events of `event` emitted from `emitter`. The iterator ends when `emitter` emits an event matching any of the events defined in `resolutionEvents`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
 
 This method has the same arguments and options as `pEvent()` with the addition of the following options:
 
 #### options
 
-Type: `Object`
+Type: `object`
 
 ##### limit
 
-Type: `number` *(non-negative integer)*<br>
+Type: `number` *(non-negative integer)*\
 Default: `Infinity`
 
 Maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. This option is useful to paginate events, for example, fetching 10 events per page.
 
 ##### resolutionEvents
 
-Type: `string[]`<br>
+Type: `string[]`\
 Default: `[]`
 
 Events that will end the iterator.
-
 
 ## Before and after
 
@@ -275,7 +271,6 @@ async function getOpenReadStream(file) {
 })().catch(console.error);
 ```
 
-
 ## Tip
 
 ### Dealing with calls that resolve with an error code
@@ -304,14 +299,8 @@ const emitter = require('./some-event-emitter');
 })();
 ```
 
-
 ## Related
 
 - [pify](https://github.com/sindresorhus/pify) - Promisify a callback-style function
 - [p-map](https://github.com/sindresorhus/p-map) - Map over promises concurrently
 - [More…](https://github.com/sindresorhus/promise-fun)
-
-
-## License
-
-MIT © [Sindre Sorhus](https://sindresorhus.com)
