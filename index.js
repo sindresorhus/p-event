@@ -287,3 +287,5 @@ module.exports.iterator = (emitter, event, options) => {
 		}
 	};
 };
+
+module.exports.TimeoutError = pTimeout.TimeoutError;

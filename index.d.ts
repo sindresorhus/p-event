@@ -1,6 +1,13 @@
 /// <reference lib="esnext"/>
 
+declare class TimeoutErrorClass extends Error {
+	readonly name: 'TimeoutError';
+	constructor(message?: string);
+}
+
 declare namespace pEvent {
+	type TimeoutError = TimeoutErrorClass;
+
 	type AddRemoveListener<EventName extends string | symbol, Arguments extends unknown[]> = (
 		event: EventName,
 		listener: (...arguments: Arguments) => void
@@ -251,6 +258,8 @@ declare const pEvent: {
 
 	// TODO: Remove this for the next major release
 	default: typeof pEvent;
+
+	TimeoutError: typeof TimeoutErrorClass;
 };
 
 export = pEvent;
