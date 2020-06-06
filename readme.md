@@ -226,6 +226,24 @@ Default: `[]`
 
 Events that will end the iterator.
 
+### pEvent.TimeoutError
+
+Exposed for instance checking and sub-classing.
+
+Example:
+
+```js
+const pEvent = require('p-event');
+
+try {
+	await pEvent(emitter, 'finish');
+} catch (error) {
+	if (error instanceof pEvent.TimeoutError) {
+		// Do something specific for timeout errors
+	}
+}
+```
+
 ## Before and after
 
 ```js
