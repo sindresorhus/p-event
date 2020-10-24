@@ -4,7 +4,7 @@
 
 Useful when you need only one event emission and want to use it with promises or await it in an async function.
 
-It's works with any event API in Node.js and the browser (using a bundler).
+It works with any event API in Node.js and the browser (using a bundler).
 
 If you want multiple individual events as they are emitted, you can use the `pEvent.iterator()` method. [Observables](https://medium.com/@benlesh/learning-observable-by-building-observable-d5da57405d87) can be useful too.
 
