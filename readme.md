@@ -1,4 +1,4 @@
-# p-event [![Build Status](https://travis-ci.com/sindresorhus/p-event.svg?branch=master)](https://travis-ci.com/sindresorhus/p-event)
+# p-event
 
 > Promisify an event by waiting for it to be emitted
 
