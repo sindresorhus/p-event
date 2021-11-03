@@ -1,7 +1,7 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import test from 'ava';
 import delay from 'delay';
-import pEvent from '.';
+import {pEvent, pEventMultiple, pEventIterator} from './index.js';
 
 test('event to promise', async t => {
 	const emitter = new EventEmitter();
@@ -40,7 +40,7 @@ test('error event rejects the promise', async t => {
 		emitter.emit('error', new Error('💩'));
 	})();
 
-	await t.throwsAsync(pEvent(emitter, '🦄'), '💩');
+	await t.throwsAsync(pEvent(emitter, '🦄'), {message: '💩'});
 });
 
 test('`rejectionEvents` option', async t => {
@@ -52,8 +52,10 @@ test('`rejectionEvents` option', async t => {
 	})();
 
 	await t.throwsAsync(pEvent(emitter, '🦄', {
-		rejectionEvents: ['foo', 'bar']
-	}), '💩');
+		rejectionEvents: ['foo', 'bar'],
+	}), {
+		message: '💩',
+	});
 });
 
 test('`multiArgs` option on resolve', async t => {
@@ -65,7 +67,7 @@ test('`multiArgs` option on resolve', async t => {
 	})();
 
 	t.deepEqual(await pEvent(emitter, '🦄', {
-		multiArgs: true
+		multiArgs: true,
 	}), ['🌈', '🌈']);
 });
 
@@ -78,7 +80,7 @@ test('`multiArgs` option on reject', async t => {
 	})();
 
 	t.deepEqual(await pEvent(emitter, 'error', {
-		multiArgs: true
+		multiArgs: true,
 	}), ['💩', '💩']);
 });
 
@@ -99,7 +101,9 @@ test('`.cancel()` method with `timeout` option', t => {
 });
 
 test('error on incompatible emitter', async t => {
-	await t.throwsAsync(pEvent({}, '🦄'), /not compatible/);
+	await t.throwsAsync(pEvent({}, '🦄'), {
+		message: /not compatible/,
+	});
 });
 
 test('works with DOM events', async t => {
@@ -139,8 +143,10 @@ test('`timeout` option rejects when short enough', async t => {
 	})();
 
 	await t.throwsAsync(pEvent(emitter, '🦄', {
-		timeout
-	}), `Promise timed out after ${timeout} milliseconds`);
+		timeout,
+	}), {
+		message: `Promise timed out after ${timeout} milliseconds`,
+	});
 
 	t.is(emitter.listenerCount('🦄'), 0);
 });
@@ -154,7 +160,7 @@ test('`timeout` option resolves when long enough', async t => {
 	})();
 
 	t.is(await pEvent(emitter, '🦄', {
-		timeout: 250
+		timeout: 250,
 	}), '🌈');
 });
 
@@ -184,7 +190,7 @@ test('filter option to match event', async t => {
 	})();
 
 	t.is(await pEvent(emitter, '🦄', {
-		filter: x => x >= 3
+		filter: x => x >= 3,
 	}), 4);
 });
 
@@ -201,8 +207,10 @@ test('filter option caught with error', async t => {
 	})();
 
 	await t.throwsAsync(pEvent(emitter, '🦄', {
-		filter: x => x >= 3
-	}), '💩');
+		filter: x => x >= 3,
+	}), {
+		message: '💩',
+	});
 });
 
 test('filter option to match event with `multiArgs`', async t => {
@@ -218,7 +226,7 @@ test('filter option to match event with `multiArgs`', async t => {
 
 	t.deepEqual(await pEvent(emitter, '🦄', {
 		filter: x => x[0] >= 3 && x[1] >= x[0],
-		multiArgs: true
+		multiArgs: true,
 	}), [3, 4]);
 });
 
@@ -229,20 +237,20 @@ test('filter option returned with `multiArgs`', async t => {
 		await delay(200);
 		emitter.emit('🦄', 1, 1);
 		emitter.emit('🦄', 2, 2);
-		emitter.emit('error', 10000, '💩');
+		emitter.emit('error', 10_000, '💩');
 		emitter.emit('🦄', 4, 3);
 		emitter.emit('🦄', 3, 4);
 	})();
 
 	t.deepEqual(await pEvent(emitter, 'error', {
 		filter: x => (x[0] > 9999) && (x[1] === '💩'),
-		multiArgs: true
-	}), [10000, '💩']);
+		multiArgs: true,
+	}), [10_000, '💩']);
 });
 
 test('event to AsyncIterator', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄');
+	const iterator = pEventIterator(emitter, '🦄');
 
 	(async () => {
 		await delay(50);
@@ -266,7 +274,7 @@ test('event to AsyncIterator', async t => {
 
 test('event to AsyncIterator implements return', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄');
+	const iterator = pEventIterator(emitter, '🦄');
 
 	t.true(iterator.return('x') instanceof Promise);
 	t.deepEqual(await iterator.return('y'), {done: true, value: 'y'});
@@ -275,7 +283,7 @@ test('event to AsyncIterator implements return', async t => {
 
 test('event to AsyncIterator with multiple event names', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, ['🦄', '🌈']);
+	const iterator = pEventIterator(emitter, ['🦄', '🌈']);
 
 	(async () => {
 		await delay(50);
@@ -299,7 +307,7 @@ test('event to AsyncIterator with multiple event names', async t => {
 
 test('event to AsyncIterator (backpressure)', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄');
+	const iterator = pEventIterator(emitter, '🦄');
 
 	emitter.emit('🦄', '🌈');
 	emitter.emit('🦄', 'Something else.');
@@ -312,7 +320,7 @@ test('event to AsyncIterator (backpressure)', async t => {
 
 test('event to AsyncIterator - option limit', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄', {limit: 2});
+	const iterator = pEventIterator(emitter, '🦄', {limit: 2});
 
 	(async () => {
 		await delay(50);
@@ -336,7 +344,7 @@ test('event to AsyncIterator - option limit', async t => {
 
 test('event to AsyncIterator (backpressure - limit)', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄', {limit: 2});
+	const iterator = pEventIterator(emitter, '🦄', {limit: 2});
 
 	emitter.emit('🦄', '🌈');
 	emitter.emit('🦄', 'Something else.');
@@ -349,7 +357,7 @@ test('event to AsyncIterator (backpressure - limit)', async t => {
 
 test('event to AsyncIterator - option limit = 0', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄', {limit: 0});
+	const iterator = pEventIterator(emitter, '🦄', {limit: 0});
 
 	(async () => {
 		await delay(50);
@@ -360,37 +368,37 @@ test('event to AsyncIterator - option limit = 0', async t => {
 });
 
 test('`limit` option should be a non-negative integer or Infinity', t => {
-	const errorMessage = 'The `limit` option should be a non-negative integer or Infinity';
+	const message = 'The `limit` option should be a non-negative integer or Infinity';
 
 	t.throws(() => {
-		pEvent.iterator(null, null, {limit: 'a'});
-	}, errorMessage);
+		pEventIterator(null, null, {limit: 'a'});
+	}, {message});
 
 	t.throws(() => {
-		pEvent.iterator(null, null, {limit: -100});
-	}, errorMessage);
+		pEventIterator(null, null, {limit: -100});
+	}, {message});
 
 	t.throws(() => {
-		pEvent.iterator(null, null, {limit: 3.5});
-	}, errorMessage);
+		pEventIterator(null, null, {limit: 3.5});
+	}, {message});
 });
 
 test('error event rejects the next promise and finishes the iterator', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄');
+	const iterator = pEventIterator(emitter, '🦄');
 
 	(async () => {
 		await delay(200);
 		emitter.emit('error', new Error('💩'));
 	})();
 
-	await t.throwsAsync(iterator.next(), '💩');
+	await t.throwsAsync(iterator.next(), {message: '💩'});
 	t.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
 test('resolve event resolves pending promises and finishes the iterator', async t => {
 	const emitter = new EventEmitter();
-	const iterator = pEvent.iterator(emitter, '🦄', {resolutionEvents: ['end']});
+	const iterator = pEventIterator(emitter, '🦄', {resolutionEvents: ['end']});
 
 	(async () => {
 		await delay(200);
@@ -403,8 +411,8 @@ test('resolve event resolves pending promises and finishes the iterator', async 
 test('.multiple()', async t => {
 	const emitter = new EventEmitter();
 
-	const promise = pEvent.multiple(emitter, '🌂', {
-		count: 3
+	const promise = pEventMultiple(emitter, '🌂', {
+		count: 3,
 	});
 
 	emitter.emit('🌂', '🌞');
@@ -418,8 +426,8 @@ test('.multiple()', async t => {
 test('.multiple() with an array of event names', async t => {
 	const emitter = new EventEmitter();
 
-	const promise = pEvent.multiple(emitter, ['🌂', '🌞'], {
-		count: 3
+	const promise = pEventMultiple(emitter, ['🌂', '🌞'], {
+		count: 3,
 	});
 
 	emitter.emit('🌂', '🌞');
@@ -433,9 +441,9 @@ test('.multiple() with an array of event names', async t => {
 test('.multiple() - `resolveImmediately` option', async t => {
 	const emitter = new EventEmitter();
 
-	const promise = pEvent.multiple(emitter, '🌂', {
+	const promise = pEventMultiple(emitter, '🌂', {
 		resolveImmediately: true,
-		count: Infinity
+		count: Number.POSITIVE_INFINITY,
 	});
 
 	const result = await promise;
@@ -451,7 +459,9 @@ test('.multiple() - `resolveImmediately` option', async t => {
 
 test('`count` option should be a zero or more', async t => {
 	await t.throwsAsync(
-		pEvent.multiple(null, null, {count: -1}),
-		'The `count` option should be at least 0 or more'
+		pEventMultiple(null, null, {count: -1}),
+		{
+			message: 'The `count` option should be at least 0 or more',
+		},
 	);
 });
