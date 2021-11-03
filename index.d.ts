@@ -152,7 +152,7 @@ Promisify an event by waiting for it to be emitted.
 
 @example
 ```
-import {pEvent} = require('p-event');
+import {pEvent} from 'p-event';
 import emitter from './some-event-emitter';
 
 // In Node.js:
