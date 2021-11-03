@@ -12,15 +12,15 @@ export interface Emitter<EventName extends string | symbol, EmittedType extends 
 	removeEventListener?: AddRemoveListener<EventName, EmittedType>;
 }
 
-export type FilterFunction<ElementType extends unknown[]> = (
-	...arguments: ElementType
+export type FilterFunction<ElementType extends unknown | unknown[]> = (
+	value: ElementType
 ) => boolean;
 
 export interface CancelablePromise<ResolveType> extends Promise<ResolveType> {
 	cancel(): void;
 }
 
-export interface Options<EmittedType extends unknown[]> {
+export interface Options<EmittedType extends unknown | unknown[]> {
 	/**
 	Events that will reject the promise.
 
@@ -70,7 +70,7 @@ export interface MultiArgumentsOptions<EmittedType extends unknown[]>
 	readonly multiArgs: true;
 }
 
-export interface MultipleOptions<EmittedType extends unknown[]>
+export interface MultipleOptions<EmittedType extends unknown | unknown[]>
 	extends Options<EmittedType> {
 	/**
 	The number of times the event needs to be emitted before the promise resolves.
@@ -121,7 +121,7 @@ export interface MultipleMultiArgumentsOptions<EmittedType extends unknown[]>
 	readonly multiArgs: true;
 }
 
-export interface IteratorOptions<EmittedType extends unknown[]>
+export interface IteratorOptions<EmittedType extends unknown | unknown[]>
 	extends Options<EmittedType> {
 	/**
 	The maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. This option is useful to paginate events, for example, fetching 10 events per page.
@@ -179,12 +179,12 @@ export function pEvent<EventName extends string | symbol, EmittedType extends un
 export function pEvent<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	filter: FilterFunction<[EmittedType]>
+	filter: FilterFunction<EmittedType>
 ): CancelablePromise<EmittedType>;
 export function pEvent<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options?: Options<[EmittedType]>
+	options?: Options<EmittedType>
 ): CancelablePromise<EmittedType>;
 
 /**
@@ -198,7 +198,7 @@ export function pEventMultiple<EventName extends string | symbol, EmittedType ex
 export function pEventMultiple<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultipleOptions<[EmittedType]>
+	options: MultipleOptions<EmittedType>
 ): CancelablePromise<EmittedType[]>;
 
 /**
@@ -226,12 +226,12 @@ export function pEventIterator<EventName extends string | symbol, EmittedType ex
 export function pEventIterator<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	filter: FilterFunction<[EmittedType]>
+	filter: FilterFunction<EmittedType>
 ): AsyncIterableIterator<EmittedType>;
 export function pEventIterator<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options?: IteratorOptions<[EmittedType]>
+	options?: IteratorOptions<EmittedType>
 ): AsyncIterableIterator<EmittedType>;
 
 export {TimeoutError} from 'p-timeout';

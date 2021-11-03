@@ -81,7 +81,7 @@ expectType<CancelablePromise<[number, string]>>(
 );
 void pEvent(new NodeEmitter(), 'finish', {
 	multiArgs: true,
-	filter: (_, string) => string === '🦄',
+	filter: ([_, string]: [number, string]) => string === '🦄',
 });
 
 pEvent(new NodeEmitter(), 'finish').cancel();
@@ -101,6 +101,11 @@ expectType<CancelablePromise<Array<[number, string]>>>(
 		multiArgs: true,
 	}),
 );
+void pEventMultiple(new NodeEmitter(), 'finish', {
+	count: Number.POSITIVE_INFINITY,
+	multiArgs: true,
+	filter: ([_, string]: [number, string]) => string === '🦄',
+});
 
 expectType<AsyncIterableIterator<number>>(
 	pEventIterator(new NodeEmitter(), 'finish'),
@@ -118,6 +123,10 @@ expectType<AsyncIterableIterator<number>>(
 expectType<AsyncIterableIterator<[number, string]>>(
 	pEventIterator(new NodeEmitter(), 'finish', {multiArgs: true}),
 );
+void pEventIterator(new NodeEmitter(), 'finish', {
+	multiArgs: true,
+	filter: ([_, string]: [number, string]) => string === '🦄',
+});
 
 async function getOpenReadStream(file: string): Promise<NodeJS.ReadableStream> {
 	const stream = fs.createReadStream(file); // eslint-disable-line @typescript-eslint/no-unsafe-assignment

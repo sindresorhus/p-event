@@ -37,7 +37,8 @@ export function pEventMultiple(emitter, event, options) {
 		const onItem = (...arguments_) => {
 			const value = options.multiArgs ? arguments_ : arguments_[0];
 
-			if (options.filter && !options.filter(...arguments_)) {
+			// eslint-disable-next-line unicorn/no-array-callback-reference
+			if (options.filter && !options.filter(value)) {
 				return;
 			}
 
@@ -215,7 +216,8 @@ export function pEventIterator(emitter, event, options) {
 	const resolveHandler = (...arguments_) => {
 		const value = options.multiArgs ? arguments_ : arguments_[0];
 
-		if (options.filter && !options.filter(...arguments_)) {
+		// eslint-disable-next-line unicorn/no-array-callback-reference
+		if (options.filter && !options.filter(value)) {
 			return;
 		}
 
