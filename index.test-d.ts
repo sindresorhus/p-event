@@ -1,43 +1,42 @@
-/// <reference lib="dom"/>
-import {EventEmitter} from 'events';
-import * as fs from 'fs';
+import process from 'node:process';
+import {EventEmitter} from 'node:events';
+import fs from 'node:fs';
 import {expectType} from 'tsd';
-import pEvent = require('.');
-import {multiple, iterator, CancelablePromise} from '.';
+import {pEvent, pEventMultiple, pEventIterator, CancelablePromise} from './index.js';
 
 class NodeEmitter extends EventEmitter {
-	on(event: 'finish', listener: (number: number, string: string) => void) {
+	on(_event: 'finish', _listener: (number: number, string: string) => void) {
 		return this;
 	}
 
 	addListener(
-		event: 'finish',
-		listener: (number: number, string: string) => void
+		_event: 'finish',
+		_listener: (number: number, string: string) => void,
 	) {
 		return this;
 	}
 
 	addEventListener(
-		event: 'finish',
-		listener: (number: number, string: string) => void
+		_event: 'finish',
+		_listener: (number: number, string: string) => void,
 	) {
 		return this;
 	}
 
-	off(event: 'finish', listener: (number: number, string: string) => void) {
+	off(_event: 'finish', _listener: (number: number, string: string) => void) {
 		return this;
 	}
 
 	removeListener(
-		event: 'finish',
-		listener: (number: number, string: string) => void
+		_event: 'finish',
+		_listener: (number: number, string: string) => void,
 	) {
 		return this;
 	}
 
 	removeEventListener(
-		event: 'finish',
-		listener: (number: number, string: string) => void
+		_event: 'finish',
+		_listener: (number: number, string: string) => void,
 	) {
 		return this;
 	}
@@ -45,81 +44,81 @@ class NodeEmitter extends EventEmitter {
 
 class DomEmitter implements EventTarget {
 	addEventListener(
-		type: 'foo',
-		listener: EventListenerOrEventListenerObject,
-		options?: boolean | AddEventListenerOptions
-	): void {}
+		_type: 'foo',
+		_listener: EventListenerOrEventListenerObject,
+		_options?: boolean | AddEventListenerOptions,
+	): void {} // eslint-disable-line @typescript-eslint/no-empty-function
 
-	dispatchEvent(event: Event): boolean {
+	dispatchEvent(_event: Event): boolean {
 		return false;
 	}
 
 	removeEventListener(
-		type: 'foo',
-		listener: EventListenerOrEventListenerObject,
-		options?: boolean | AddEventListenerOptions
-	): void {}
+		_type: 'foo',
+		_listener: EventListenerOrEventListenerObject,
+		_options?: boolean | AddEventListenerOptions,
+	): void {} // eslint-disable-line @typescript-eslint/no-empty-function
 }
 
 expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), 'finish'));
 expectType<CancelablePromise<number>>(
-	pEvent(new NodeEmitter(), '🦄', value => value > 3)
+	pEvent(new NodeEmitter(), '🦄', value => value > 3),
 );
 expectType<CancelablePromise<Event>>(pEvent(new DomEmitter(), 'finish'));
 expectType<CancelablePromise<Event>>(pEvent(document, 'DOMContentLoaded'));
 
 expectType<CancelablePromise<number>>(
-	pEvent(new NodeEmitter(), 'finish', {rejectionEvents: ['error']})
+	pEvent(new NodeEmitter(), 'finish', {rejectionEvents: ['error']}),
 );
 expectType<CancelablePromise<number>>(
-	pEvent(new NodeEmitter(), 'finish', {timeout: 1})
+	pEvent(new NodeEmitter(), 'finish', {timeout: 1}),
 );
 expectType<CancelablePromise<number>>(
-	pEvent(new NodeEmitter(), 'finish', {filter: value => value > 3})
+	pEvent(new NodeEmitter(), 'finish', {filter: value => value > 3}),
 );
 expectType<CancelablePromise<[number, string]>>(
-	pEvent(new NodeEmitter(), 'finish', {multiArgs: true})
+	pEvent(new NodeEmitter(), 'finish', {multiArgs: true}),
 );
 
 pEvent(new NodeEmitter(), 'finish').cancel();
 
 expectType<CancelablePromise<number[]>>(
-	multiple(new NodeEmitter(), 'hello', {count: Infinity})
+	pEventMultiple(new NodeEmitter(), 'hello', {count: Number.POSITIVE_INFINITY}),
 );
 expectType<CancelablePromise<number[]>>(
-	multiple(new NodeEmitter(), 'hello', {
+	pEventMultiple(new NodeEmitter(), 'hello', {
 		resolveImmediately: true,
-		count: Infinity
-	})
+		count: Number.POSITIVE_INFINITY,
+	}),
 );
-expectType<CancelablePromise<[number, string][]>>(
-	multiple(new NodeEmitter(), 'hello', {
-		count: Infinity,
-		multiArgs: true
-	})
-);
-
-expectType<AsyncIterableIterator<number>>(
-	iterator(new NodeEmitter(), 'finish')
-);
-expectType<AsyncIterableIterator<number>>(
-	iterator(new NodeEmitter(), '🦄', value => value > 3)
+expectType<CancelablePromise<Array<[number, string]>>>(
+	pEventMultiple(new NodeEmitter(), 'hello', {
+		count: Number.POSITIVE_INFINITY,
+		multiArgs: true,
+	}),
 );
 
 expectType<AsyncIterableIterator<number>>(
-	iterator(new NodeEmitter(), 'finish', {limit: 1})
+	pEventIterator(new NodeEmitter(), 'finish'),
 );
 expectType<AsyncIterableIterator<number>>(
-	iterator(new NodeEmitter(), 'finish', {resolutionEvents: ['finish']})
+	pEventIterator(new NodeEmitter(), '🦄', value => value > 3),
+);
+
+expectType<AsyncIterableIterator<number>>(
+	pEventIterator(new NodeEmitter(), 'finish', {limit: 1}),
+);
+expectType<AsyncIterableIterator<number>>(
+	pEventIterator(new NodeEmitter(), 'finish', {resolutionEvents: ['finish']}),
 );
 expectType<AsyncIterableIterator<[number, string]>>(
-	iterator(new NodeEmitter(), 'finish', {multiArgs: true})
+	pEventIterator(new NodeEmitter(), 'finish', {multiArgs: true}),
 );
 
-async function getOpenReadStream(file: string) {
-	const stream = fs.createReadStream(file);
+async function getOpenReadStream(file: string): Promise<NodeJS.ReadableStream> {
+	const stream = fs.createReadStream(file); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
 	await pEvent(stream, 'open');
-	return stream;
+	return stream; // eslint-disable-line @typescript-eslint/no-unsafe-return
 }
 
 const stream = await getOpenReadStream('unicorn.txt');
