@@ -82,7 +82,7 @@ expectType<CancelablePromise<[number, string]>>(
 );
 void pEvent(new NodeEmitter(), 'finish', {
 	multiArgs: true,
-	filter: ([_, string]) => string === "🦄",
+	filter: (_, string) => string === "🦄",
 });
 
 pEvent(new NodeEmitter(), 'finish').cancel();

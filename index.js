@@ -40,13 +40,11 @@ const multiple = (emitter, event, options) => {
 		const {addListener, removeListener} = normalizeEmitter(emitter);
 
 		const onItem = (...args) => {
-			const value = options.multiArgs ? args : args[0];
-
-			if (options.filter && !options.filter(value)) {
+			if (options.filter && !options.filter(...args)) {
 				return;
 			}
 
-			items.push(value);
+			items.push(options.multiArgs ? args : args[0]);
 
 			if (options.count === items.length) {
 				cancel();
