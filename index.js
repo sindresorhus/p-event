@@ -218,6 +218,7 @@ export function pEventIterator(emitter, event, options) {
 
 		// eslint-disable-next-line unicorn/no-array-callback-reference
 		if (options.filter && !options.filter(value)) {
+			cancel();
 			return;
 		}
 
