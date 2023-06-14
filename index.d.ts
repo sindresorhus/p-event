@@ -3,24 +3,24 @@ export type AddRemoveListener<EventName extends string | symbol, Arguments exten
 	listener: (...arguments: Arguments) => void
 ) => void;
 
-export interface Emitter<EventName extends string | symbol, EmittedType extends unknown[]> {
+export type Emitter<EventName extends string | symbol, EmittedType extends unknown[]> = {
 	on?: AddRemoveListener<EventName, EmittedType>;
 	addListener?: AddRemoveListener<EventName, EmittedType>;
 	addEventListener?: AddRemoveListener<EventName, EmittedType>;
 	off?: AddRemoveListener<EventName, EmittedType>;
 	removeListener?: AddRemoveListener<EventName, EmittedType>;
 	removeEventListener?: AddRemoveListener<EventName, EmittedType>;
-}
+};
 
 export type FilterFunction<ElementType extends unknown | unknown[]> = (
 	value: ElementType
 ) => boolean;
 
-export interface CancelablePromise<ResolveType> extends Promise<ResolveType> {
+export type CancelablePromise<ResolveType> = {
 	cancel(): void;
-}
+} & Promise<ResolveType>;
 
-export interface Options<EmittedType extends unknown | unknown[]> {
+export type Options<EmittedType extends unknown | unknown[]> = {
 	/**
 	Events that will reject the promise.
 
@@ -68,15 +68,13 @@ export interface Options<EmittedType extends unknown | unknown[]> {
 	An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) to abort waiting for the event.
 	*/
 	readonly signal?: AbortSignal;
-}
+};
 
-export interface MultiArgumentsOptions<EmittedType extends unknown[]>
-	extends Options<EmittedType> {
+export type MultiArgumentsOptions<EmittedType extends unknown[]> = {
 	readonly multiArgs: true;
-}
+} & Options<EmittedType>;
 
-export interface MultipleOptions<EmittedType extends unknown | unknown[]>
-	extends Options<EmittedType> {
+export type MultipleOptions<EmittedType extends unknown | unknown[]> = {
 	/**
 	The number of times the event needs to be emitted before the promise resolves.
 	*/
@@ -119,15 +117,13 @@ export interface MultipleOptions<EmittedType extends unknown | unknown[]>
 	```
 	*/
 	readonly resolveImmediately?: boolean;
-}
+} & Options<EmittedType>;
 
-export interface MultipleMultiArgumentsOptions<EmittedType extends unknown[]>
-	extends MultipleOptions<EmittedType> {
+export type MultipleMultiArgumentsOptions<EmittedType extends unknown[]> = {
 	readonly multiArgs: true;
-}
+} & MultipleOptions<EmittedType>;
 
-export interface IteratorOptions<EmittedType extends unknown | unknown[]>
-	extends Options<EmittedType> {
+export type IteratorOptions<EmittedType extends unknown | unknown[]> = {
 	/**
 	The maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. This option is useful to paginate events, for example, fetching 10 events per page.
 
@@ -141,12 +137,11 @@ export interface IteratorOptions<EmittedType extends unknown | unknown[]>
 	@default []
 	*/
 	readonly resolutionEvents?: ReadonlyArray<string | symbol>;
-}
+} & Options<EmittedType>;
 
-export interface IteratorMultiArgumentsOptions<EmittedType extends unknown[]>
-	extends IteratorOptions<EmittedType> {
+export type IteratorMultiArgumentsOptions<EmittedType extends unknown[]> = {
 	multiArgs: true;
-}
+} & IteratorOptions<EmittedType>;
 
 /**
 Promisify an event by waiting for it to be emitted.

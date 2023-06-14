@@ -2,7 +2,7 @@ import process from 'node:process';
 import {EventEmitter} from 'node:events';
 import fs from 'node:fs';
 import {expectType} from 'tsd';
-import {pEvent, pEventMultiple, pEventIterator, CancelablePromise} from './index.js';
+import {pEvent, pEventMultiple, pEventIterator, type CancelablePromise} from './index.js';
 
 class NodeEmitter extends EventEmitter {
 	on(_event: 'finish', _listener: (number: number, string: string) => void) {
@@ -129,9 +129,9 @@ void pEventIterator(new NodeEmitter(), 'finish', {
 });
 
 async function getOpenReadStream(file: string): Promise<NodeJS.ReadableStream> {
-	const stream = fs.createReadStream(file); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+	const stream = fs.createReadStream(file) as NodeJS.ReadableStream;
 	await pEvent(stream, 'open');
-	return stream; // eslint-disable-line @typescript-eslint/no-unsafe-return
+	return stream;
 }
 
 const stream = await getOpenReadStream('unicorn.txt');

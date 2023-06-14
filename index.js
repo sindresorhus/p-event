@@ -76,7 +76,9 @@ export function pEventMultiple(emitter, event, options) {
 		}
 
 		if (options.signal) {
-			options.signal.addEventListener('abort', () => rejectHandler(options.signal.reason), {once: true});
+			options.signal.addEventListener('abort', () => {
+				rejectHandler(options.signal.reason);
+			}, {once: true});
 		}
 
 		if (options.resolveImmediately) {
@@ -87,7 +89,7 @@ export function pEventMultiple(emitter, event, options) {
 	returnValue.cancel = cancel;
 
 	if (typeof options.timeout === 'number') {
-		const timeout = pTimeout(returnValue, options.timeout);
+		const timeout = pTimeout(returnValue, {milliseconds: options.timeout});
 		timeout.cancel = cancel;
 		return timeout;
 	}
@@ -107,7 +109,7 @@ export function pEvent(emitter, event, options) {
 	};
 
 	const arrayPromise = pEventMultiple(emitter, event, options);
-	const promise = arrayPromise.then(array => array[0]); // eslint-disable-line promise/prefer-await-to-then
+	const promise = arrayPromise.then(array => array[0]);
 	promise.cancel = arrayPromise.cancel;
 
 	return promise;
@@ -253,7 +255,9 @@ export function pEventIterator(emitter, event, options) {
 	}
 
 	if (options.signal) {
-		options.signal.addEventListener('abort', () => rejectHandler(options.signal.reason), {once: true});
+		options.signal.addEventListener('abort', () => {
+			rejectHandler(options.signal.reason);
+		}, {once: true});
 	}
 
 	return {
