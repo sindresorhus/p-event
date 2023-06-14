@@ -408,6 +408,18 @@ test('resolve event resolves pending promises and finishes the iterator', async 
 	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
+test('resolve event resolves pending promises and finishes the iterator - when filter is set', async t => {
+	const emitter = new EventEmitter();
+	const iterator = pEventIterator(emitter, '🦄', {resolutionEvents: ['end'], filter: Boolean});
+
+	(async () => {
+		await delay(200);
+		emitter.emit('end');
+	})();
+
+	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
 test('.multiple()', async t => {
 	const emitter = new EventEmitter();
 
