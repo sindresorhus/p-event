@@ -65,11 +65,8 @@ export interface Options<EmittedType extends unknown | unknown[]> {
 	readonly filter?: FilterFunction<EmittedType>;
 
 	/**
-	An `AbortSignal` instance used to cancel the operation.
-	@see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
-	@optional
-	@type {AbortSignal}
-	 */
+	An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) to abort waiting for the event.
+	*/
 	readonly signal?: AbortSignal;
 }
 
