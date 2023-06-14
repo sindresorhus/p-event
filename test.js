@@ -248,6 +248,36 @@ test('filter option returned with `multiArgs`', async t => {
 	}), [10_000, '💩']);
 });
 
+test('AbortSignal rejects when aborted', async t => {
+	const emitter = new EventEmitter();
+
+	(async () => {
+		await delay(200);
+		emitter.emit('🦄', '🌈');
+	})();
+
+	await t.throwsAsync(pEvent(emitter, '🦄', {signal: AbortSignal.timeout(5)}), {
+		message: 'The operation was aborted due to timeout',
+	});
+	t.is(emitter.listenerCount('🦄'), 0);
+});
+
+test('AbortSignal that is already aborted rejects immediately', async t => {
+	const emitter = new EventEmitter();
+	const controller = new AbortController();
+	controller.abort(new Error('reason'));
+
+	(async () => {
+		await delay(200);
+		emitter.emit('🦄', '🌈');
+	})();
+
+	await t.throwsAsync(pEvent(emitter, '🦄', {signal: controller.signal}), {
+		message: 'reason',
+	});
+	t.is(emitter.listenerCount('🦄'), 0);
+});
+
 test('event to AsyncIterator', async t => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄');
@@ -418,6 +448,34 @@ test('resolve event resolves pending promises and finishes the iterator - when f
 	})();
 
 	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});
+
+test('AsyncIterator - AbortSignal rejects when aborted', async t => {
+	const emitter = new EventEmitter();
+	const controller = new AbortController();
+	const iterator = pEventIterator(emitter, '🦄', {signal: controller.signal});
+
+	(async () => {
+		await delay(200);
+		emitter.emit('🦄', '🌈');
+		emitter.emit('🦄', 'Something else.');
+		await delay(1);
+		controller.abort(new Error('reason'));
+		emitter.emit('🦄', 'Some third thing.');
+	})();
+
+	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	await t.throwsAsync(iterator.next(), {message: 'reason'});
+	t.is(emitter.listenerCount('🦄'), 0);
+});
+
+test('AsyncIterator - AbortSignal that is already aborted rejects immediately', t => {
+	const emitter = new EventEmitter();
+	const controller = new AbortController();
+	controller.abort(new Error('reason'));
+	t.throws(() => pEventIterator(emitter, '🦄', {signal: controller.signal}), {message: 'reason'});
+	t.is(emitter.listenerCount('🦄'), 0);
 });
 
 test('.multiple()', async t => {

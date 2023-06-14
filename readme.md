@@ -133,6 +133,12 @@ const result = await pEvent(emitter, '🦄', value => value > 3);
 // Do something with first 🦄 event with a value greater than 3
 ```
 
+##### signal
+
+Type: `AbortSignal`
+
+An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) to abort waiting for the event.
+
 ### pEventMultiple(emitter, event, options)
 
 Wait for multiple event emissions. Returns an array.

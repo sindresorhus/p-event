@@ -28,6 +28,8 @@ export function pEventMultiple(emitter, event, options) {
 			throw new TypeError('The `count` option should be at least 0 or more');
 		}
 
+		options.signal?.throwIfAborted();
+
 		// Allow multiple events
 		const events = [event].flat();
 
@@ -71,6 +73,10 @@ export function pEventMultiple(emitter, event, options) {
 
 		for (const rejectionEvent of options.rejectionEvents) {
 			addListener(rejectionEvent, rejectHandler);
+		}
+
+		if (options.signal) {
+			options.signal.addEventListener('abort', () => rejectHandler(options.signal.reason), {once: true});
 		}
 
 		if (options.resolveImmediately) {
@@ -128,6 +134,8 @@ export function pEventIterator(emitter, event, options) {
 	if (!isValidLimit) {
 		throw new TypeError('The `limit` option should be a non-negative integer or Infinity');
 	}
+
+	options.signal?.throwIfAborted();
 
 	if (limit === 0) {
 		// Return an empty async iterator to avoid any further cost
@@ -242,6 +250,10 @@ export function pEventIterator(emitter, event, options) {
 
 	for (const resolutionEvent of options.resolutionEvents) {
 		addListener(resolutionEvent, resolveHandler);
+	}
+
+	if (options.signal) {
+		options.signal.addEventListener('abort', () => rejectHandler(options.signal.reason), {once: true});
 	}
 
 	return {

@@ -63,6 +63,11 @@ export interface Options<EmittedType extends unknown | unknown[]> {
 	```
 	*/
 	readonly filter?: FilterFunction<EmittedType>;
+
+	/**
+	An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) to abort waiting for the event.
+	*/
+	readonly signal?: AbortSignal;
 }
 
 export interface MultiArgumentsOptions<EmittedType extends unknown[]>
