@@ -1,8 +1,8 @@
 import pTimeout from 'p-timeout';
 
 const normalizeEmitter = emitter => {
-	const addListener = emitter.on || emitter.addListener || emitter.addEventListener;
-	const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
+	const addListener = emitter.addEventListener || emitter.on || emitter.addListener;
+	const removeListener = emitter.removeEventListener || emitter.off || emitter.removeListener;
 
 	if (!addListener || !removeListener) {
 		throw new TypeError('Emitter is not compatible');
