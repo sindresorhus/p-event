@@ -101,7 +101,7 @@ export type Options<EmittedType extends unknown | unknown[]> = {
 	/**
 	An [`AbortSignal`](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) to abort waiting for the event.
 	*/
-	readonly signal?: AbortSignal;
+	readonly signal?: AbortSignal | undefined;
 };
 
 export type MultiArgumentsOptions<EmittedType extends unknown[]> = {
