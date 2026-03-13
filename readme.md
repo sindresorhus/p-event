@@ -254,6 +254,30 @@ Default: `[]`
 
 Events that will end the iterator.
 
+### TypedEventEmitter
+
+A TypeScript helper type for getting typed event inference with `pEvent`. Cast your emitter to `TypedEventEmitter<EventMap>` to get the resolved type inferred from your event map.
+
+> [!NOTE]
+> Due to a [TypeScript limitation](https://github.com/microsoft/TypeScript/issues/53750), `pEvent` cannot automatically infer event types from `EventEmitter<T>` subclasses. Use `TypedEventEmitter` as a workaround.
+
+```ts
+import {pEvent, type TypedEventEmitter} from 'p-event';
+import {EventEmitter} from 'node:events';
+
+type MyEvents = {
+	data: [buffer: Uint8Array];
+	error: [error: Error];
+};
+
+class MyEmitter extends EventEmitter<MyEvents> {}
+
+const emitter = new MyEmitter() as unknown as TypedEventEmitter<MyEvents>;
+
+const buffer = await pEvent(emitter, 'data');
+//=> Uint8Array
+```
+
 ### TimeoutError
 
 Exposed for instance checking and sub-classing.

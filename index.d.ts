@@ -178,19 +178,26 @@ export type IteratorMultiArgumentsOptions<EmittedType extends unknown[]> = {
 } & IteratorOptions<EmittedType>;
 
 /**
-Generic event emitter type for users to cast their emitters to get type inference.
+A TypeScript helper type for getting typed event inference with `pEvent`. Cast your emitter to `TypedEventEmitter<EventMap>` to get the resolved type inferred from your event map.
+
+Due to a [TypeScript limitation](https://github.com/microsoft/TypeScript/issues/53750), `pEvent` cannot automatically infer event types from `EventEmitter<T>` subclasses. Use `TypedEventEmitter` as a workaround.
 
 @example
 ```
 import {pEvent, type TypedEventEmitter} from 'p-event';
+import {EventEmitter} from 'node:events';
 
 type MyEvents = {
 	data: [buffer: Uint8Array];
 	error: [error: Error];
 };
 
-const emitter = getEmitter() as TypedEventEmitter<MyEvents>;
-const buffer = await pEvent(emitter, 'data'); // Inferred as Uint8Array
+class MyEmitter extends EventEmitter<MyEvents> {}
+
+const emitter = new MyEmitter() as unknown as TypedEventEmitter<MyEvents>;
+
+const buffer = await pEvent(emitter, 'data');
+//=> Uint8Array
 ```
 */
 export type TypedEventEmitter<EventMap extends Record<string | symbol, unknown[]>> = {
