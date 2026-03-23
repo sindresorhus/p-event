@@ -67,7 +67,7 @@ Returns a `Promise` that is fulfilled when `emitter` emits an event matching `ev
 **Note**: `event` is a string for a single event type, for example, `'data'`. To listen on multiple
 events, pass an array of strings, such as `['started', 'stopped']`.
 
-The returned promise has a `.cancel()` method, which when called, removes the event listeners and causes the promise to never be settled. However, for new code, it's recommended to use the [`signal` option](#signal) instead.
+The returned promise has a `.cancel()` method, which when called, removes the event listeners and causes the promise to remain unsettled. However, for new code, it's recommended to use the [`signal` option](#signal) instead.
 
 #### emitter
 
