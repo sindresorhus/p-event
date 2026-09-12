@@ -254,7 +254,6 @@ export function pEventIterator(emitter, event, options) {
 					return;
 				}
 			} catch (filterError) {
-				cancel();
 				if (nextQueue.length > 0) {
 					const {reject} = nextQueue.shift();
 					reject(filterError);
@@ -264,6 +263,7 @@ export function pEventIterator(emitter, event, options) {
 					error = filterError;
 				}
 
+				cancel();
 				return;
 			}
 		}

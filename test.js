@@ -743,3 +743,31 @@ test('async filter function that throws rejects the promise', async t => {
 		message: 'Async filter error',
 	});
 });
+
+for (const asynchronous of [false, true]) {
+	test(`AsyncIterator - ${asynchronous ? 'async' : 'sync'} resolution filter rejects a pending next call`, async t => {
+		const emitter = new EventEmitter();
+		const error = new Error('Resolution filter failed');
+
+		const filter = () => {
+			throw error;
+		};
+
+		const iterator = pEventIterator(emitter, 'data', {
+			resolutionEvents: ['end'],
+			filter: asynchronous ? async value => filter(value) : filter,
+		});
+		const first = iterator.next();
+		const second = iterator.next();
+		const rejection = t.throwsAsync(first, {is: error});
+
+		emitter.emit('end');
+
+		await rejection;
+		t.deepEqual(await second, {done: true, value: undefined});
+		t.deepEqual(await iterator.next(), {done: true, value: undefined});
+		t.is(emitter.listenerCount('data'), 0);
+		t.is(emitter.listenerCount('end'), 0);
+		t.is(emitter.listenerCount('error'), 0);
+	});
+}
