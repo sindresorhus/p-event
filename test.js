@@ -771,3 +771,47 @@ for (const asynchronous of [false, true]) {
 		t.is(emitter.listenerCount('error'), 0);
 	});
 }
+
+for (const pendingRead of [false, true]) {
+	test(`AsyncIterator - concurrent resolution filter failures with ${pendingRead ? 'a pending read' : 'no pending read'}`, async t => {
+		const emitter = new EventEmitter();
+		const firstError = new Error('First filter failure');
+		const secondError = new Error('Second filter failure');
+		const iterator = pEventIterator(emitter, 'data', {
+			resolutionEvents: ['end'],
+			async filter(error) {
+				throw error;
+			},
+		});
+		const rejection = pendingRead ? t.throwsAsync(iterator.next(), {is: firstError}) : undefined;
+
+		emitter.emit('end', firstError);
+		emitter.emit('end', secondError);
+		await Promise.resolve();
+
+		await (pendingRead ? rejection : t.throwsAsync(iterator.next(), {is: firstError}));
+
+		t.deepEqual(await iterator.next(), {done: true, value: undefined});
+		t.is(emitter.listenerCount('data'), 0);
+		t.is(emitter.listenerCount('end'), 0);
+		t.is(emitter.listenerCount('error'), 0);
+	});
+}
+
+test('AsyncIterator - a pending resolution filter cannot replace a rejection event error', async t => {
+	const emitter = new EventEmitter();
+	const error = new Error('Rejection event');
+	const iterator = pEventIterator(emitter, 'data', {
+		resolutionEvents: ['end'],
+		async filter() {
+			throw new Error('Late filter failure');
+		},
+	});
+
+	emitter.emit('end');
+	emitter.emit('error', error);
+	await Promise.resolve();
+
+	await t.throwsAsync(iterator.next(), {is: error});
+	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+});

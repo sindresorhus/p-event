@@ -231,8 +231,12 @@ export function pEventIterator(emitter, event, options) {
 		}
 	};
 
-	const rejectHandler = (...arguments_) => {
-		error = options.rejectionMultiArgs ? arguments_ : arguments_[0];
+	const rejectIterator = reason => {
+		if (isDone) {
+			return;
+		}
+
+		error = reason;
 
 		if (nextQueue.length > 0) {
 			const {reject} = nextQueue.shift();
@@ -242,6 +246,10 @@ export function pEventIterator(emitter, event, options) {
 		}
 
 		cancel();
+	};
+
+	const rejectHandler = (...arguments_) => {
+		rejectIterator(options.rejectionMultiArgs ? arguments_ : arguments_[0]);
 	};
 
 	const resolveHandler = async (...arguments_) => {
@@ -254,16 +262,7 @@ export function pEventIterator(emitter, event, options) {
 					return;
 				}
 			} catch (filterError) {
-				if (nextQueue.length > 0) {
-					const {reject} = nextQueue.shift();
-					reject(filterError);
-				} else {
-					// Store error for next iterator call
-					hasPendingError = true;
-					error = filterError;
-				}
-
-				cancel();
+				rejectIterator(filterError);
 				return;
 			}
 		}
