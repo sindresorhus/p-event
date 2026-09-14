@@ -12,11 +12,11 @@ import {
 } from './index.js';
 
 class NodeEmitter extends EventEmitter {
-	on(_event: 'finish', _listener: (number: number, string: string) => void) {
+	override on(_event: 'finish', _listener: (number: number, string: string) => void) {
 		return this;
 	}
 
-	addListener(
+	override addListener(
 		_event: 'finish',
 		_listener: (number: number, string: string) => void,
 	) {
@@ -30,11 +30,11 @@ class NodeEmitter extends EventEmitter {
 		return this;
 	}
 
-	off(_event: 'finish', _listener: (number: number, string: string) => void) {
+	override off(_event: 'finish', _listener: (number: number, string: string) => void) {
 		return this;
 	}
 
-	removeListener(
+	override removeListener(
 		_event: 'finish',
 		_listener: (number: number, string: string) => void,
 	) {
