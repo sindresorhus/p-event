@@ -1,9 +1,16 @@
 import EventEmitter from 'node:events';
-import test from 'ava';
-import delay from 'delay';
+import {test} from 'node:test';
+import {strict as assert} from 'node:assert';
+import {setTimeout as delay} from 'node:timers/promises';
 import {pEvent, pEventMultiple, pEventIterator} from './index.js';
 
-test('event to promise', async t => {
+const remainingListenerCounts = emitter => [
+	emitter.listenerCount('data'),
+	emitter.listenerCount('end'),
+	emitter.listenerCount('error'),
+];
+
+test('event to promise', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -11,10 +18,10 @@ test('event to promise', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	t.is(await pEvent(emitter, '🦄'), '🌈');
+	assert.equal(await pEvent(emitter, '🦄'), '🌈');
 });
 
-test('event to promise with multiple event names', async t => {
+test('event to promise with multiple event names', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -22,17 +29,17 @@ test('event to promise with multiple event names', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	t.is(await pEvent(emitter, ['🦄', '🌈']), '🌈');
+	assert.equal(await pEvent(emitter, ['🦄', '🌈']), '🌈');
 
 	(async () => {
 		await delay(100);
 		emitter.emit('🌈', '🦄');
 	})();
 
-	t.is(await pEvent(emitter, ['🦄', '🌈']), '🦄');
+	assert.equal(await pEvent(emitter, ['🦄', '🌈']), '🦄');
 });
 
-test('error event rejects the promise', async t => {
+test('error event rejects the promise', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -40,10 +47,10 @@ test('error event rejects the promise', async t => {
 		emitter.emit('error', new Error('💩'));
 	})();
 
-	await t.throwsAsync(pEvent(emitter, '🦄'), {message: '💩'});
+	await assert.rejects(pEvent(emitter, '🦄'), {message: '💩'});
 });
 
-test('`rejectionEvents` option', async t => {
+test('`rejectionEvents` option', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -51,14 +58,14 @@ test('`rejectionEvents` option', async t => {
 		emitter.emit('bar', new Error('💩'));
 	})();
 
-	await t.throwsAsync(pEvent(emitter, '🦄', {
+	await assert.rejects(pEvent(emitter, '🦄', {
 		rejectionEvents: ['foo', 'bar'],
 	}), {
 		message: '💩',
 	});
 });
 
-test('`multiArgs` option on resolve', async t => {
+test('`multiArgs` option on resolve', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -66,12 +73,12 @@ test('`multiArgs` option on resolve', async t => {
 		emitter.emit('🦄', '🌈', '🌈');
 	})();
 
-	t.deepEqual(await pEvent(emitter, '🦄', {
+	assert.deepEqual(await pEvent(emitter, '🦄', {
 		multiArgs: true,
 	}), ['🌈', '🌈']);
 });
 
-test('`multiArgs` option on reject', async t => {
+test('`multiArgs` option on reject', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -79,12 +86,12 @@ test('`multiArgs` option on reject', async t => {
 		emitter.emit('error', '💩', '💩');
 	})();
 
-	t.deepEqual(await pEvent(emitter, 'error', {
+	assert.deepEqual(await pEvent(emitter, 'error', {
 		multiArgs: true,
 	}), ['💩', '💩']);
 });
 
-test('`rejectionMultiArgs` option enabled - pEvent', async t => {
+test('`rejectionMultiArgs` option enabled - pEvent', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -92,18 +99,16 @@ test('`rejectionMultiArgs` option enabled - pEvent', async t => {
 		emitter.emit('error', 'arg1', 'arg2', 'arg3');
 	})();
 
-	try {
-		await pEvent(emitter, '🦄', {
-			rejectionMultiArgs: true,
-			rejectionEvents: ['error'],
-		});
-		t.fail('Should have rejected');
-	} catch (error) {
-		t.deepEqual(error, ['arg1', 'arg2', 'arg3']);
-	}
+	await assert.rejects(pEvent(emitter, '🦄', {
+		rejectionMultiArgs: true,
+		rejectionEvents: ['error'],
+	}), error => {
+		assert.deepEqual(error, ['arg1', 'arg2', 'arg3']);
+		return true;
+	});
 });
 
-test('`rejectionMultiArgs` option disabled (default) - pEvent', async t => {
+test('`rejectionMultiArgs` option disabled (default) - pEvent', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -111,18 +116,16 @@ test('`rejectionMultiArgs` option disabled (default) - pEvent', async t => {
 		emitter.emit('error', 'arg1', 'arg2', 'arg3');
 	})();
 
-	try {
-		await pEvent(emitter, '🦄', {
-			rejectionMultiArgs: false,
-			rejectionEvents: ['error'],
-		});
-		t.fail('Should have rejected');
-	} catch (error) {
-		t.is(error, 'arg1');
-	}
+	await assert.rejects(pEvent(emitter, '🦄', {
+		rejectionMultiArgs: false,
+		rejectionEvents: ['error'],
+	}), error => {
+		assert.equal(error, 'arg1');
+		return true;
+	});
 });
 
-test('`rejectionMultiArgs` option enabled - pEventMultiple', async t => {
+test('`rejectionMultiArgs` option enabled - pEventMultiple', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -130,20 +133,17 @@ test('`rejectionMultiArgs` option enabled - pEventMultiple', async t => {
 		emitter.emit('error', 'arg1', 'arg2', 'arg3');
 	})();
 
-	try {
-		await pEventMultiple(emitter, '🦄', {
-			rejectionMultiArgs: true,
-			rejectionEvents: ['error'],
-			count: 2,
-		});
-		t.fail('Should have rejected');
-	} catch (error) {
-		t.deepEqual(error, ['arg1', 'arg2', 'arg3']);
-	}
+	await assert.rejects(pEventMultiple(emitter, '🦄', {
+		rejectionMultiArgs: true,
+		rejectionEvents: ['error'],
+		count: 2,
+	}), error => {
+		assert.deepEqual(error, ['arg1', 'arg2', 'arg3']);
+		return true;
+	});
 });
 
-test('`rejectionMultiArgs` option enabled - pEventIterator', async t => {
-	const {pEventIterator} = await import('./index.js');
+test('`rejectionMultiArgs` option enabled - pEventIterator', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -155,21 +155,20 @@ test('`rejectionMultiArgs` option enabled - pEventIterator', async t => {
 		rejectionMultiArgs: true,
 		rejectionEvents: ['error'],
 	});
+	const seen = [];
 
-	try {
-		// eslint-disable-next-line no-unused-vars
+	await assert.rejects((async () => {
 		for await (const value of iterator) {
-			// Should not reach here
-			t.fail('Should have rejected');
+			seen.push(value);
 		}
-
-		t.fail('Expected rejection');
-	} catch (error) {
-		t.deepEqual(error, ['arg1', 'arg2', 'arg3']);
-	}
+	})(), error => {
+		assert.deepEqual(error, ['arg1', 'arg2', 'arg3']);
+		return true;
+	});
+	assert.deepEqual(seen, []);
 });
 
-test('`rejectionMultiArgs` default behavior preserves backward compatibility', async t => {
+test('`rejectionMultiArgs` default behavior preserves backward compatibility', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -177,33 +176,28 @@ test('`rejectionMultiArgs` default behavior preserves backward compatibility', a
 		emitter.emit('error', new Error('test error'));
 	})();
 
-	try {
-		await pEvent(emitter, '🦄', {
-			rejectionEvents: ['error'],
-		});
-		t.fail('Should have rejected');
-	} catch (error) {
-		t.is(error.message, 'test error');
-	}
+	await assert.rejects(pEvent(emitter, '🦄', {
+		rejectionEvents: ['error'],
+	}), {message: 'test error'});
 });
 
-test('`.cancel()` method', t => {
+test('`.cancel()` method', () => {
 	const emitter = new EventEmitter();
 	const promise = pEvent(emitter, '🦄');
-	t.is(emitter.listenerCount('🦄'), 1);
+	assert.equal(emitter.listenerCount('🦄'), 1);
 	promise.cancel();
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('`.cancel()` method with `timeout` option', t => {
+test('`.cancel()` method with `timeout` option', () => {
 	const emitter = new EventEmitter();
 	const promise = pEvent(emitter, '🦄', {timeout: 250});
-	t.is(emitter.listenerCount('🦄'), 1);
+	assert.equal(emitter.listenerCount('🦄'), 1);
 	promise.cancel();
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('`.cancel()` method clears timeout', async t => {
+test('`.cancel()` method clears timeout', async () => {
 	const emitter = new EventEmitter();
 	const promise = pEvent(emitter, '🦄', {timeout: 50});
 	promise.cancel();
@@ -211,17 +205,17 @@ test('`.cancel()` method clears timeout', async t => {
 	// Wait longer than timeout to ensure it doesn't fire
 	await delay(100);
 
-	// If we get here without a timeout error, the test passes
-	t.pass('Timeout was properly cleared');
+	// Getting here without a timeout error is what the test asserts.
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('error on incompatible emitter', async t => {
-	await t.throwsAsync(pEvent({}, '🦄'), {
-		message: /not compatible/,
+test('error on incompatible emitter', async () => {
+	await assert.rejects(pEvent({}, '🦄'), {
+		message: /not compatible/v,
 	});
 });
 
-test('works with DOM events', async t => {
+test('works with DOM events', async () => {
 	const emitter = new EventEmitter();
 	emitter.addEvenListener = emitter.addListener;
 	emitter.removeEvenListener = emitter.removeListener;
@@ -234,10 +228,10 @@ test('works with DOM events', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	t.is(await pEvent(emitter, '🦄'), '🌈');
+	assert.equal(await pEvent(emitter, '🦄'), '🌈');
 });
 
-test('event to promise - error', async t => {
+test('event to promise - error', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -245,10 +239,10 @@ test('event to promise - error', async t => {
 		emitter.emit('error', new Error('💩'));
 	})();
 
-	t.deepEqual(await pEvent(emitter, 'error'), new Error('💩'));
+	assert.deepEqual(await pEvent(emitter, 'error'), new Error('💩'));
 });
 
-test('`timeout` option rejects when short enough', async t => {
+test('`timeout` option rejects when short enough', async () => {
 	const emitter = new EventEmitter();
 	const timeout = 50;
 
@@ -257,16 +251,16 @@ test('`timeout` option rejects when short enough', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	await t.throwsAsync(pEvent(emitter, '🦄', {
+	await assert.rejects(pEvent(emitter, '🦄', {
 		timeout,
 	}), {
 		message: `Promise timed out after ${timeout} milliseconds`,
 	});
 
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('`timeout` option resolves when long enough', async t => {
+test('`timeout` option resolves when long enough', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -274,12 +268,12 @@ test('`timeout` option resolves when long enough', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	t.is(await pEvent(emitter, '🦄', {
+	assert.equal(await pEvent(emitter, '🦄', {
 		timeout: 250,
 	}), '🌈');
 });
 
-test('filter function to match event', async t => {
+test('filter function to match event', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -290,10 +284,10 @@ test('filter function to match event', async t => {
 		emitter.emit('🦄', 3);
 	})();
 
-	t.is(await pEvent(emitter, '🦄', x => x >= 3), 4);
+	assert.equal(await pEvent(emitter, '🦄', x => x >= 3), 4);
 });
 
-test('filter option to match event', async t => {
+test('filter option to match event', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -304,12 +298,12 @@ test('filter option to match event', async t => {
 		emitter.emit('🦄', 3);
 	})();
 
-	t.is(await pEvent(emitter, '🦄', {
+	assert.equal(await pEvent(emitter, '🦄', {
 		filter: x => x >= 3,
 	}), 4);
 });
 
-test('filter option caught with error', async t => {
+test('filter option caught with error', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -321,14 +315,14 @@ test('filter option caught with error', async t => {
 		emitter.emit('🦄', 3);
 	})();
 
-	await t.throwsAsync(pEvent(emitter, '🦄', {
+	await assert.rejects(pEvent(emitter, '🦄', {
 		filter: x => x >= 3,
 	}), {
 		message: '💩',
 	});
 });
 
-test('filter option to match event with `multiArgs`', async t => {
+test('filter option to match event with `multiArgs`', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -339,13 +333,13 @@ test('filter option to match event with `multiArgs`', async t => {
 		emitter.emit('🦄', 3, 4);
 	})();
 
-	t.deepEqual(await pEvent(emitter, '🦄', {
+	assert.deepEqual(await pEvent(emitter, '🦄', {
 		filter: x => x[0] >= 3 && x[1] >= x[0],
 		multiArgs: true,
 	}), [3, 4]);
 });
 
-test('filter option returned with `multiArgs`', async t => {
+test('filter option returned with `multiArgs`', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -357,13 +351,13 @@ test('filter option returned with `multiArgs`', async t => {
 		emitter.emit('🦄', 3, 4);
 	})();
 
-	t.deepEqual(await pEvent(emitter, 'error', {
+	assert.deepEqual(await pEvent(emitter, 'error', {
 		filter: x => (x[0] > 9999) && (x[1] === '💩'),
 		multiArgs: true,
 	}), [10_000, '💩']);
 });
 
-test('AbortSignal rejects when aborted', async t => {
+test('AbortSignal rejects when aborted', async () => {
 	const emitter = new EventEmitter();
 
 	(async () => {
@@ -371,17 +365,14 @@ test('AbortSignal rejects when aborted', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	try {
-		await pEvent(emitter, '🦄', {signal: AbortSignal.timeout(5)});
-		t.fail('Expected rejection');
-	} catch (error) {
-		t.is(error.message, 'The operation was aborted due to timeout');
-	}
+	await assert.rejects(pEvent(emitter, '🦄', {signal: AbortSignal.timeout(5)}), {
+		message: 'The operation was aborted due to timeout',
+	});
 
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('AbortSignal that is already aborted rejects immediately', async t => {
+test('AbortSignal that is already aborted rejects immediately', async () => {
 	const emitter = new EventEmitter();
 	const controller = new AbortController();
 	controller.abort(new Error('reason'));
@@ -391,13 +382,13 @@ test('AbortSignal that is already aborted rejects immediately', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	await t.throwsAsync(pEvent(emitter, '🦄', {signal: controller.signal}), {
+	await assert.rejects(pEvent(emitter, '🦄', {signal: controller.signal}), {
 		message: 'reason',
 	});
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('event to AsyncIterator', async t => {
+test('event to AsyncIterator', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄');
 
@@ -416,21 +407,21 @@ test('event to AsyncIterator', async t => {
 		emitter.emit('🦄', 'Some third thing.');
 	})();
 
-	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
+	assert.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
 });
 
-test('event to AsyncIterator implements return', async t => {
+test('event to AsyncIterator implements return', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄');
 
-	t.true(iterator.return('x') instanceof Promise);
-	t.deepEqual(await iterator.return('y'), {done: true, value: 'y'});
-	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	assert.ok(iterator.return('x') instanceof Promise);
+	assert.deepEqual(await iterator.return('y'), {done: true, value: 'y'});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('event to AsyncIterator with multiple event names', async t => {
+test('event to AsyncIterator with multiple event names', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, ['🦄', '🌈']);
 
@@ -449,12 +440,12 @@ test('event to AsyncIterator with multiple event names', async t => {
 		emitter.emit('🦄', 'Some third thing.');
 	})();
 
-	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
+	assert.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
 });
 
-test('event to AsyncIterator (backpressure)', async t => {
+test('event to AsyncIterator (backpressure)', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄');
 
@@ -462,12 +453,12 @@ test('event to AsyncIterator (backpressure)', async t => {
 	emitter.emit('🦄', 'Something else.');
 	emitter.emit('🦄', 'Some third thing.');
 
-	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
+	assert.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Some third thing.'});
 });
 
-test('event to AsyncIterator - option limit', async t => {
+test('event to AsyncIterator - option limit', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄', {limit: 2});
 
@@ -486,12 +477,12 @@ test('event to AsyncIterator - option limit', async t => {
 		emitter.emit('🦄', 'Some third thing.');
 	})();
 
-	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
-	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	assert.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('event to AsyncIterator (backpressure - limit)', async t => {
+test('event to AsyncIterator (backpressure - limit)', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄', {limit: 2});
 
@@ -499,12 +490,12 @@ test('event to AsyncIterator (backpressure - limit)', async t => {
 	emitter.emit('🦄', 'Something else.');
 	emitter.emit('🦄', 'Some third thing.');
 
-	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
-	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	assert.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('event to AsyncIterator - option limit = 0', async t => {
+test('event to AsyncIterator - option limit = 0', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄', {limit: 0});
 
@@ -513,26 +504,26 @@ test('event to AsyncIterator - option limit = 0', async t => {
 		emitter.emit('🦄', '🌈');
 	})();
 
-	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('`limit` option should be a non-negative integer or Infinity', t => {
+test('`limit` option should be a non-negative integer or Infinity', () => {
 	const message = 'The `limit` option should be a non-negative integer or Infinity';
 
-	t.throws(() => {
+	assert.throws(() => {
 		pEventIterator(null, null, {limit: 'a'});
 	}, {message});
 
-	t.throws(() => {
+	assert.throws(() => {
 		pEventIterator(null, null, {limit: -100});
 	}, {message});
 
-	t.throws(() => {
+	assert.throws(() => {
 		pEventIterator(null, null, {limit: 3.5});
 	}, {message});
 });
 
-test('error event rejects the next promise and finishes the iterator', async t => {
+test('error event rejects the next promise and finishes the iterator', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄');
 
@@ -541,11 +532,11 @@ test('error event rejects the next promise and finishes the iterator', async t =
 		emitter.emit('error', new Error('💩'));
 	})();
 
-	await t.throwsAsync(iterator.next(), {message: '💩'});
-	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	await assert.rejects(iterator.next(), {message: '💩'});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('resolve event resolves pending promises and finishes the iterator', async t => {
+test('resolve event resolves pending promises and finishes the iterator', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄', {resolutionEvents: ['end']});
 
@@ -554,10 +545,10 @@ test('resolve event resolves pending promises and finishes the iterator', async 
 		emitter.emit('end');
 	})();
 
-	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('resolve event resolves pending promises and finishes the iterator - when filter is set', async t => {
+test('resolve event resolves pending promises and finishes the iterator - when filter is set', async () => {
 	const emitter = new EventEmitter();
 	const iterator = pEventIterator(emitter, '🦄', {resolutionEvents: ['end'], filter: Boolean});
 
@@ -566,10 +557,10 @@ test('resolve event resolves pending promises and finishes the iterator - when f
 		emitter.emit('end');
 	})();
 
-	await t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });
 
-test('AsyncIterator - AbortSignal rejects when aborted', async t => {
+test('AsyncIterator - AbortSignal rejects when aborted', async () => {
 	const emitter = new EventEmitter();
 	const controller = new AbortController();
 	const iterator = pEventIterator(emitter, '🦄', {signal: controller.signal});
@@ -583,21 +574,21 @@ test('AsyncIterator - AbortSignal rejects when aborted', async t => {
 		emitter.emit('🦄', 'Some third thing.');
 	})();
 
-	t.deepEqual(await iterator.next(), {done: false, value: '🌈'});
-	t.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
-	await t.throwsAsync(iterator.next(), {message: 'reason'});
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.deepEqual(await iterator.next(), {done: false, value: '🌈'});
+	assert.deepEqual(await iterator.next(), {done: false, value: 'Something else.'});
+	await assert.rejects(iterator.next(), {message: 'reason'});
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('AsyncIterator - AbortSignal that is already aborted rejects immediately', t => {
+test('AsyncIterator - AbortSignal that is already aborted rejects immediately', () => {
 	const emitter = new EventEmitter();
 	const controller = new AbortController();
 	controller.abort(new Error('reason'));
-	t.throws(() => pEventIterator(emitter, '🦄', {signal: controller.signal}), {message: 'reason'});
-	t.is(emitter.listenerCount('🦄'), 0);
+	assert.throws(() => pEventIterator(emitter, '🦄', {signal: controller.signal}), {message: 'reason'});
+	assert.equal(emitter.listenerCount('🦄'), 0);
 });
 
-test('.multiple()', async t => {
+test('.multiple()', async () => {
 	const emitter = new EventEmitter();
 
 	const promise = pEventMultiple(emitter, '🌂', {
@@ -609,10 +600,10 @@ test('.multiple()', async t => {
 	emitter.emit('🌂', '🌞');
 	emitter.emit('🌂', '🌞');
 
-	t.deepEqual(await promise, ['🌞', '🌞', '🌞']);
+	assert.deepEqual(await promise, ['🌞', '🌞', '🌞']);
 });
 
-test('.multiple() with an array of event names', async t => {
+test('.multiple() with an array of event names', async () => {
 	const emitter = new EventEmitter();
 
 	const promise = pEventMultiple(emitter, ['🌂', '🌞'], {
@@ -624,30 +615,30 @@ test('.multiple() with an array of event names', async t => {
 	emitter.emit('🌞', '🌂');
 	emitter.emit('🌂', '🌞');
 
-	t.deepEqual(await promise, ['🌞', '🌂', '🌂']);
+	assert.deepEqual(await promise, ['🌞', '🌂', '🌂']);
 });
 
-test('.multiple() - `resolveImmediately` option', async t => {
+test('.multiple() - `resolveImmediately` option', async () => {
 	const emitter = new EventEmitter();
 
 	const promise = pEventMultiple(emitter, '🌂', {
 		resolveImmediately: true,
-		count: Number.POSITIVE_INFINITY,
+		count: Infinity,
 	});
 
 	const result = await promise;
-	t.deepEqual(result, []);
+	assert.deepEqual(result, []);
 
 	emitter.emit('🌂', '🌞');
 	emitter.emit('🌂', '🌞');
 	emitter.emit('🌂', '🌞');
 	emitter.emit('🌂', '🌞');
 
-	t.deepEqual(result, ['🌞', '🌞', '🌞', '🌞']);
+	assert.deepEqual(result, ['🌞', '🌞', '🌞', '🌞']);
 });
 
-test('`count` option should be a zero or more', async t => {
-	await t.throwsAsync(
+test('`count` option should be a zero or more', async () => {
+	await assert.rejects(
 		pEventMultiple(null, null, {count: -1}),
 		{
 			message: 'The `count` option should be at least 0 or more',
@@ -655,7 +646,7 @@ test('`count` option should be a zero or more', async t => {
 	);
 });
 
-test('async filter function works', async t => {
+test('async filter function works', async () => {
 	const emitter = new EventEmitter();
 
 	const asyncFilter = async value => {
@@ -671,10 +662,10 @@ test('async filter function works', async t => {
 		emitter.emit('test', 4);
 	})();
 
-	t.is(await pEvent(emitter, 'test', {filter: asyncFilter}), 2);
+	assert.equal(await pEvent(emitter, 'test', {filter: asyncFilter}), 2);
 });
 
-test('async filter function with pEventMultiple', async t => {
+test('async filter function with pEventMultiple', async () => {
 	const emitter = new EventEmitter();
 
 	const asyncFilter = async value => {
@@ -696,10 +687,10 @@ test('async filter function with pEventMultiple', async t => {
 		count: 2,
 	});
 
-	t.deepEqual(result, [15, 20]);
+	assert.deepEqual(result, [15, 20]);
 });
 
-test('filter function that throws rejects the promise', async t => {
+test('filter function that throws rejects the promise', async () => {
 	const emitter = new EventEmitter();
 
 	const buggyFilter = value => {
@@ -716,12 +707,12 @@ test('filter function that throws rejects the promise', async t => {
 		emitter.emit('test', 2); // This will throw and reject the promise
 	})();
 
-	await t.throwsAsync(pEvent(emitter, 'test', {filter: buggyFilter}), {
+	await assert.rejects(pEvent(emitter, 'test', {filter: buggyFilter}), {
 		message: 'Filter error',
 	});
 });
 
-test('async filter function that throws rejects the promise', async t => {
+test('async filter function that throws rejects the promise', async () => {
 	const emitter = new EventEmitter();
 
 	const asyncFilter = async value => {
@@ -739,66 +730,107 @@ test('async filter function that throws rejects the promise', async t => {
 		emitter.emit('test', 2); // This will throw and reject the promise
 	})();
 
-	await t.throwsAsync(pEvent(emitter, 'test', {filter: asyncFilter}), {
+	await assert.rejects(pEvent(emitter, 'test', {filter: asyncFilter}), {
 		message: 'Async filter error',
 	});
 });
 
-for (const asynchronous of [false, true]) {
-	test(`AsyncIterator - ${asynchronous ? 'async' : 'sync'} resolution filter rejects a pending next call`, async t => {
-		const emitter = new EventEmitter();
-		const error = new Error('Resolution filter failed');
+// The emitter is created by the test so it can assert on the listener cleanup afterwards.
+const rejectPendingNextWithResolutionFilter = async (emitter, asynchronous) => {
+	const expected = new Error('Resolution filter failed');
 
-		const filter = () => {
+	const filter = () => {
+		throw expected;
+	};
+
+	const iterator = pEventIterator(emitter, 'data', {
+		resolutionEvents: ['end'],
+		filter: asynchronous ? async value => filter(value) : filter,
+	});
+	const first = iterator.next();
+	const second = iterator.next();
+	let reason;
+	const rejection = assert.rejects(first, error => {
+		reason = error;
+		return error === expected;
+	});
+
+	emitter.emit('end');
+
+	await rejection;
+	assert.deepEqual(await second, {done: true, value: undefined});
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
+
+	return reason;
+};
+
+test('AsyncIterator - sync resolution filter rejects a pending next call', async () => {
+	const emitter = new EventEmitter();
+	const reason = await rejectPendingNextWithResolutionFilter(emitter, false);
+
+	assert.equal(reason.message, 'Resolution filter failed');
+	assert.deepEqual(remainingListenerCounts(emitter), [0, 0, 0]);
+});
+
+test('AsyncIterator - async resolution filter rejects a pending next call', async () => {
+	const emitter = new EventEmitter();
+	const reason = await rejectPendingNextWithResolutionFilter(emitter, true);
+
+	assert.equal(reason.message, 'Resolution filter failed');
+	assert.deepEqual(remainingListenerCounts(emitter), [0, 0, 0]);
+});
+
+// The emitter is created by the test so it can assert on the listener cleanup afterwards.
+const rejectConcurrentResolutionFilterFailures = async (emitter, pendingRead) => {
+	const firstError = new Error('First filter failure');
+	const secondError = new Error('Second filter failure');
+	const iterator = pEventIterator(emitter, 'data', {
+		resolutionEvents: ['end'],
+		async filter(error) {
 			throw error;
-		};
-
-		const iterator = pEventIterator(emitter, 'data', {
-			resolutionEvents: ['end'],
-			filter: asynchronous ? async value => filter(value) : filter,
-		});
-		const first = iterator.next();
-		const second = iterator.next();
-		const rejection = t.throwsAsync(first, {is: error});
-
-		emitter.emit('end');
-
-		await rejection;
-		t.deepEqual(await second, {done: true, value: undefined});
-		t.deepEqual(await iterator.next(), {done: true, value: undefined});
-		t.is(emitter.listenerCount('data'), 0);
-		t.is(emitter.listenerCount('end'), 0);
-		t.is(emitter.listenerCount('error'), 0);
+		},
 	});
-}
+	let reason;
+	const rejection = pendingRead
+		? assert.rejects(iterator.next(), error => {
+			reason = error;
+			return error === firstError;
+		})
+		: undefined;
 
-for (const pendingRead of [false, true]) {
-	test(`AsyncIterator - concurrent resolution filter failures with ${pendingRead ? 'a pending read' : 'no pending read'}`, async t => {
-		const emitter = new EventEmitter();
-		const firstError = new Error('First filter failure');
-		const secondError = new Error('Second filter failure');
-		const iterator = pEventIterator(emitter, 'data', {
-			resolutionEvents: ['end'],
-			async filter(error) {
-				throw error;
-			},
-		});
-		const rejection = pendingRead ? t.throwsAsync(iterator.next(), {is: firstError}) : undefined;
+	emitter.emit('end', firstError);
+	emitter.emit('end', secondError);
+	await Promise.resolve();
 
-		emitter.emit('end', firstError);
-		emitter.emit('end', secondError);
-		await Promise.resolve();
+	await (pendingRead
+		? rejection
+		: assert.rejects(iterator.next(), error => {
+			reason = error;
+			return error === firstError;
+		}));
 
-		await (pendingRead ? rejection : t.throwsAsync(iterator.next(), {is: firstError}));
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 
-		t.deepEqual(await iterator.next(), {done: true, value: undefined});
-		t.is(emitter.listenerCount('data'), 0);
-		t.is(emitter.listenerCount('end'), 0);
-		t.is(emitter.listenerCount('error'), 0);
-	});
-}
+	return reason;
+};
 
-test('AsyncIterator - a pending resolution filter cannot replace a rejection event error', async t => {
+test('AsyncIterator - concurrent resolution filter failures with no pending read', async () => {
+	const emitter = new EventEmitter();
+	const reason = await rejectConcurrentResolutionFilterFailures(emitter, false);
+
+	assert.equal(reason.message, 'First filter failure');
+	assert.deepEqual(remainingListenerCounts(emitter), [0, 0, 0]);
+});
+
+test('AsyncIterator - concurrent resolution filter failures with a pending read', async () => {
+	const emitter = new EventEmitter();
+	const reason = await rejectConcurrentResolutionFilterFailures(emitter, true);
+
+	assert.equal(reason.message, 'First filter failure');
+	assert.deepEqual(remainingListenerCounts(emitter), [0, 0, 0]);
+});
+
+test('AsyncIterator - a pending resolution filter cannot replace a rejection event error', async () => {
 	const emitter = new EventEmitter();
 	const error = new Error('Rejection event');
 	const iterator = pEventIterator(emitter, 'data', {
@@ -812,6 +844,6 @@ test('AsyncIterator - a pending resolution filter cannot replace a rejection eve
 	emitter.emit('error', error);
 	await Promise.resolve();
 
-	await t.throwsAsync(iterator.next(), {is: error});
-	t.deepEqual(await iterator.next(), {done: true, value: undefined});
+	await assert.rejects(iterator.next(), error_ => error_ === error);
+	assert.deepEqual(await iterator.next(), {done: true, value: undefined});
 });

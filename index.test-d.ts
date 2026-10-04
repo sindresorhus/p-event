@@ -83,17 +83,17 @@ void pEvent(new NodeEmitter(), 'finish', {
 
 pEvent(new NodeEmitter(), 'finish').cancel();
 
-expectType<CancelablePromise<number[]>>(pEventMultiple(new NodeEmitter(), 'hello', {count: Number.POSITIVE_INFINITY}));
+expectType<CancelablePromise<number[]>>(pEventMultiple(new NodeEmitter(), 'hello', {count: Infinity}));
 expectType<CancelablePromise<number[]>>(pEventMultiple(new NodeEmitter(), 'hello', {
 	resolveImmediately: true,
-	count: Number.POSITIVE_INFINITY,
+	count: Infinity,
 }));
 expectType<CancelablePromise<Array<[number, string]>>>(pEventMultiple(new NodeEmitter(), 'hello', {
-	count: Number.POSITIVE_INFINITY,
+	count: Infinity,
 	multiArgs: true,
 }));
 void pEventMultiple(new NodeEmitter(), 'finish', {
-	count: Number.POSITIVE_INFINITY,
+	count: Infinity,
 	multiArgs: true,
 	filter: ([_, string]: [number, string]) => string === '🦄',
 });
@@ -162,7 +162,7 @@ declare const rl: readline.Interface;
 expectType<CancelablePromise<string>>(pEvent(rl, 'line'));
 expectType<CancelablePromise<string[]>>(pEvent(rl, 'history'));
 expectType<CancelablePromise<[string]>>(pEvent(rl, 'line', {multiArgs: true}));
-expectType<CancelablePromise<string>>(pEvent(rl, 'line', line => line.startsWith('>')));
+expectType<CancelablePromise<string>>(pEvent(rl, 'line', line => line.length > 0));
 
 // PEventMultiple with readline
 expectType<CancelablePromise<string[]>>(pEventMultiple(rl, 'line', {count: 5}));

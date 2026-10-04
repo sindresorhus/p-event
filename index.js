@@ -25,7 +25,7 @@ export function pEventMultiple(emitter, event, options) {
 			...options,
 		};
 
-		if (!(options.count >= 0 && (options.count === Number.POSITIVE_INFINITY || Number.isInteger(options.count)))) {
+		if (!(options.count >= 0 && (options.count === Infinity || Number.isSafeInteger(options.count)))) {
 			throw new TypeError('The `count` option should be at least 0 or more');
 		}
 
@@ -54,10 +54,12 @@ export function pEventMultiple(emitter, event, options) {
 
 			items.push(value);
 
-			if (options.count === items.length) {
-				cancel();
-				resolve(items);
+			if (options.count !== items.length) {
+				return;
 			}
+
+			cancel();
+			resolve(items);
 		};
 
 		const rejectHandler = (...arguments_) => {
@@ -66,8 +68,8 @@ export function pEventMultiple(emitter, event, options) {
 		};
 
 		cancel = () => {
-			for (const event of events) {
-				removeListener(event, onItem);
+			for (const eventName of events) {
+				removeListener(eventName, onItem);
 			}
 
 			for (const rejectionEvent of options.rejectionEvents) {
@@ -78,8 +80,8 @@ export function pEventMultiple(emitter, event, options) {
 			}
 		};
 
-		for (const event of events) {
-			addListener(event, onItem);
+		for (const eventName of events) {
+			addListener(eventName, onItem);
 		}
 
 		for (const rejectionEvent of options.rejectionEvents) {
@@ -129,7 +131,7 @@ export function pEvent(emitter, event, options) {
 	};
 
 	const arrayPromise = pEventMultiple(emitter, event, options);
-	const promise = arrayPromise.then(array => array[0]); // eslint-disable-line promise/prefer-await-to-then
+	const promise = arrayPromise.then(array => array[0]);
 	promise.cancel = arrayPromise.cancel;
 
 	return promise;
@@ -146,14 +148,14 @@ export function pEventIterator(emitter, event, options) {
 	options = {
 		rejectionEvents: ['error'],
 		resolutionEvents: [],
-		limit: Number.POSITIVE_INFINITY,
+		limit: Infinity,
 		multiArgs: false,
 		rejectionMultiArgs: false,
 		...options,
 	};
 
 	const {limit} = options;
-	const isValidLimit = limit >= 0 && (limit === Number.POSITIVE_INFINITY || Number.isInteger(limit));
+	const isValidLimit = limit >= 0 && (limit === Infinity || Number.isSafeInteger(limit));
 	if (!isValidLimit) {
 		throw new TypeError('The `limit` option should be a non-negative integer or Infinity');
 	}
@@ -213,8 +215,8 @@ export function pEventIterator(emitter, event, options) {
 	const cancel = () => {
 		isDone = true;
 
-		for (const event of events) {
-			removeListener(event, valueHandler);
+		for (const eventName of events) {
+			removeListener(eventName, valueHandler);
 		}
 
 		for (const rejectionEvent of options.rejectionEvents) {
@@ -277,8 +279,8 @@ export function pEventIterator(emitter, event, options) {
 		cancel();
 	};
 
-	for (const event of events) {
-		addListener(event, valueHandler);
+	for (const eventName of events) {
+		addListener(eventName, valueHandler);
 	}
 
 	for (const rejectionEvent of options.rejectionEvents) {

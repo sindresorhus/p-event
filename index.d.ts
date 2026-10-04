@@ -1,6 +1,8 @@
+/* eslint-disable unicorn/consistent-boolean-name -- `filter` is the published name of the third parameter. */
+
 export type AddRemoveListener<EventName extends string | symbol, Arguments extends unknown[]> = (
 	event: EventName,
-	listener: (...arguments: Arguments) => void
+	listener: (...arguments: Arguments) => void,
 ) => void;
 
 export type Emitter<EventName extends string | symbol, EmittedType extends unknown[]> = {
@@ -19,7 +21,7 @@ type NodeEventEmitter<EventMap extends Record<string | symbol, unknown[]> = Reco
 };
 
 export type FilterFunction<ElementType extends unknown | unknown[]> = (
-	value: ElementType
+	value: ElementType,
 ) => boolean | Promise<boolean>;
 
 export type CancelablePromise<ResolveType> = {
@@ -287,51 +289,51 @@ export function pEvent<EventMap extends Record<string | symbol, unknown[]>, K ex
 export function pEvent<EventName extends string | symbol, EmittedType extends unknown[]>(
 	emitter: Emitter<EventName, EmittedType>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultiArgumentsOptions<EmittedType>
+	options: MultiArgumentsOptions<EmittedType>,
 ): CancelablePromise<EmittedType>;
 export function pEvent<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	filter: FilterFunction<EmittedType>
+	filter: FilterFunction<EmittedType>,
 ): CancelablePromise<EmittedType>;
 export function pEvent<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options?: Options<EmittedType>
+	options?: Options<EmittedType>,
 ): CancelablePromise<EmittedType>;
 
-/* eslint-disable @typescript-eslint/unified-signatures */
+/* eslint-disable @typescript-eslint/unified-signatures -- The overloads differ only in the argument type, which the rule cannot see. */
 // Node.js EventEmitter overloads for @types/node v22 compatibility
 export function pEvent<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	options: MultiArgumentsOptions<EventMap[K]>
+	options: MultiArgumentsOptions<EventMap[K]>,
 ): CancelablePromise<EventMap[K]>;
 export function pEvent<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	filter: FilterFunction<EventMap[K][0]>
+	filter: FilterFunction<EventMap[K][0]>,
 ): CancelablePromise<EventMap[K][0]>;
 export function pEvent<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	options?: Options<EventMap[K][0]>
+	options?: Options<EventMap[K][0]>,
 ): CancelablePromise<EventMap[K][0]>;
-/* eslint-enable @typescript-eslint/unified-signatures */
+/* eslint-enable @typescript-eslint/unified-signatures -- See the disable above. */
 export function pEvent(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultiArgumentsOptions<unknown[]>
+	options: MultiArgumentsOptions<unknown[]>,
 ): CancelablePromise<unknown[]>;
 export function pEvent(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	filter: FilterFunction<unknown>
+	filter: FilterFunction<unknown>,
 ): CancelablePromise<unknown>;
 export function pEvent(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options?: Options<unknown>
+	options?: Options<unknown>,
 ): CancelablePromise<unknown>;
 
 /**
@@ -363,39 +365,41 @@ export function pEventMultiple<EventMap extends Record<string | symbol, unknown[
 export function pEventMultiple<EventName extends string | symbol, EmittedType extends unknown[]>(
 	emitter: Emitter<EventName, EmittedType>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultipleMultiArgumentsOptions<EmittedType>
+	options: MultipleMultiArgumentsOptions<EmittedType>,
 ): CancelablePromise<EmittedType[]>;
 export function pEventMultiple<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultipleOptions<EmittedType>
+	options: MultipleOptions<EmittedType>,
 ): CancelablePromise<EmittedType[]>;
 
-/* eslint-disable @typescript-eslint/unified-signatures */
+/* eslint-disable @typescript-eslint/unified-signatures -- The overloads differ only in the argument type, which the rule cannot see. */
 // Node.js EventEmitter overloads for @types/node v22 compatibility
 export function pEventMultiple<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	options: MultipleMultiArgumentsOptions<EventMap[K]>
+	options: MultipleMultiArgumentsOptions<EventMap[K]>,
 ): CancelablePromise<Array<EventMap[K]>>;
 export function pEventMultiple<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	options: MultipleOptions<EventMap[K][0]>
+	options: MultipleOptions<EventMap[K][0]>,
 ): CancelablePromise<Array<EventMap[K][0]>>;
-/* eslint-enable @typescript-eslint/unified-signatures */
+/* eslint-enable @typescript-eslint/unified-signatures -- See the disable above. */
 export function pEventMultiple(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultipleMultiArgumentsOptions<unknown[]>
+	options: MultipleMultiArgumentsOptions<unknown[]>,
 ): CancelablePromise<unknown[][]>;
 export function pEventMultiple(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: MultipleOptions<unknown>
+	options: MultipleOptions<unknown>,
 ): CancelablePromise<unknown[]>;
 
 /**
+Listen for events emitted by an emitter.
+
 @returns An [async iterator](https://2ality.com/2016/10/asynchronous-iteration.html) that lets you asynchronously iterate over events of `event` emitted from `emitter`. The iterator ends when `emitter` emits an event matching any of the events defined in `resolutionEvents`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
 
 @example
@@ -448,51 +452,51 @@ export function pEventIterator<EventMap extends Record<string | symbol, unknown[
 export function pEventIterator<EventName extends string | symbol, EmittedType extends unknown[]>(
 	emitter: Emitter<EventName, EmittedType>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: IteratorMultiArgumentsOptions<EmittedType>
+	options: IteratorMultiArgumentsOptions<EmittedType>,
 ): AsyncIterableIterator<EmittedType>;
 export function pEventIterator<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	filter: FilterFunction<EmittedType>
+	filter: FilterFunction<EmittedType>,
 ): AsyncIterableIterator<EmittedType>;
 export function pEventIterator<EventName extends string | symbol, EmittedType>(
 	emitter: Emitter<EventName, [EmittedType]>,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options?: IteratorOptions<EmittedType>
+	options?: IteratorOptions<EmittedType>,
 ): AsyncIterableIterator<EmittedType>;
 
-/* eslint-disable @typescript-eslint/unified-signatures */
+/* eslint-disable @typescript-eslint/unified-signatures -- The overloads differ only in the argument type, which the rule cannot see. */
 // Node.js EventEmitter overloads for @types/node v22 compatibility
 export function pEventIterator<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	options: IteratorMultiArgumentsOptions<EventMap[K]>
+	options: IteratorMultiArgumentsOptions<EventMap[K]>,
 ): AsyncIterableIterator<EventMap[K]>;
 export function pEventIterator<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	filter: FilterFunction<EventMap[K][0]>
+	filter: FilterFunction<EventMap[K][0]>,
 ): AsyncIterableIterator<EventMap[K][0]>;
 export function pEventIterator<EventMap extends Record<string | symbol, unknown[]>, K extends keyof EventMap>(
 	emitter: NodeEventEmitter<EventMap>,
 	event: K,
-	options?: IteratorOptions<EventMap[K][0]>
+	options?: IteratorOptions<EventMap[K][0]>,
 ): AsyncIterableIterator<EventMap[K][0]>;
-/* eslint-enable @typescript-eslint/unified-signatures */
+/* eslint-enable @typescript-eslint/unified-signatures -- See the disable above. */
 export function pEventIterator(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options: IteratorMultiArgumentsOptions<unknown[]>
+	options: IteratorMultiArgumentsOptions<unknown[]>,
 ): AsyncIterableIterator<unknown[]>;
 export function pEventIterator(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	filter: FilterFunction<unknown>
+	filter: FilterFunction<unknown>,
 ): AsyncIterableIterator<unknown>;
 export function pEventIterator(
 	emitter: NodeEventEmitter,
 	event: string | symbol | ReadonlyArray<string | symbol>,
-	options?: IteratorOptions<unknown>
+	options?: IteratorOptions<unknown>,
 ): AsyncIterableIterator<unknown>;
 
 export {TimeoutError} from 'p-timeout';
