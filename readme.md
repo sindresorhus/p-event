@@ -67,6 +67,9 @@ Returns a `Promise` that is fulfilled when `emitter` emits an event matching `ev
 **Note**: `event` is a string for a single event type, for example, `'data'`. To listen on multiple
 events, pass an array of strings, such as `['started', 'stopped']`.
 
+> [!NOTE]
+> The event type is only inferred for a single event name. Passing an array resolves to `unknown`, including with `TypedEventEmitter`, because TypeScript cannot narrow the result to the listed events without also losing the check that rejects unknown event names.
+
 The returned promise has a `.cancel()` method, which when called, removes the event listeners and causes the promise to never be settled. However, for new code, it's recommended to use the [`signal` option](#signal) instead.
 
 #### emitter
@@ -75,11 +78,11 @@ Type: `object`
 
 Event emitter object.
 
-Should have either a `.on()`/`.addListener()`/`.addEventListener()` and `.off()`/`.removeListener()`/`.removeEventListener()` method, like the [Node.js `EventEmitter`](https://nodejs.org/api/events.html) and [DOM events](https://developer.mozilla.org/en-US/docs/Web/Events).
+Should have a matching pair of `.addEventListener()`/`.removeEventListener()`, `.on()`/`.off()`, or `.addListener()`/`.removeListener()` methods, like the [Node.js `EventEmitter`](https://nodejs.org/api/events.html) and [DOM events](https://developer.mozilla.org/en-US/docs/Web/Events).
 
 #### event
 
-Type: `string | string[]`
+Type: `string | symbol | (string | symbol)[]`
 
 Name of the event or events to listen to.
 
@@ -91,7 +94,7 @@ Type: `object`
 
 ##### rejectionEvents
 
-Type: `string[]`\
+Type: `(string | symbol)[]`\
 Default: `['error']`
 
 Events that will reject the promise.
@@ -135,7 +138,7 @@ try {
 
 ##### timeout
 
-Type: `number`\
+Type: `number` *(greater than zero)*\
 Default: `Infinity`
 
 Time in milliseconds before timing out.
@@ -145,6 +148,9 @@ Time in milliseconds before timing out.
 Type: `Function`
 
 A filter function for accepting an event. Can be synchronous or asynchronous.
+
+> [!NOTE]
+> An asynchronous filter is awaited one event at a time, so that the accepted events keep the order they were emitted in. A filter that takes a while therefore holds up the events behind it. A rejection event or an abort ends the call right away, so an event that is still being filtered at that point is dropped.
 
 ```js
 import {pEvent} from 'p-event';
@@ -193,13 +199,14 @@ The number of times the event needs to be emitted before the promise resolves.
 Type: `boolean`\
 Default: `false`
 
-Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error.
+Whether to resolve the promise immediately. Emitting one of the `rejectionEvents` won't throw an error. With the `timeout` option, the listening stops when the deadline passes.
 
 **Note**: The returned array will be mutated when an event is emitted.
 
 Example:
 
 ```js
+import {EventEmitter} from 'node:events';
 import {pEventMultiple} from 'p-event';
 
 const emitter = new EventEmitter();
@@ -234,7 +241,7 @@ console.log(result);
 
 Returns an [async iterator](https://2ality.com/2016/10/asynchronous-iteration.html) that lets you asynchronously iterate over events of `event` emitted from `emitter`. The iterator ends when `emitter` emits an event matching any of the events defined in `resolutionEvents`, or rejects if `emitter` emits any of the events defined in the `rejectionEvents` option.
 
-This method has the same arguments and options as `pEvent()` with the addition of the following options:
+This method has the same arguments and options as `pEvent()` with the addition of the following options. The `timeout` option is not supported here, since there is no promise to time out.
 
 #### options
 
@@ -245,14 +252,16 @@ Type: `object`
 Type: `number` *(non-negative integer)*\
 Default: `Infinity`
 
-The maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. This option is useful to paginate events, for example, fetching 10 events per page.
+The maximum number of events for the iterator before it ends. When the limit is reached, the iterator will be marked as `done`. Events that `filter` drops also count towards the limit. This option is useful to paginate events, for example, fetching 10 events per page.
 
 ##### resolutionEvents
 
-Type: `string[]`\
+Type: `(string | symbol)[]`\
 Default: `[]`
 
 Events that will end the iterator.
+
+The payload of the event is the `value` of the first `{done: true}` result, the same way a generator returns a value. It comes after all buffered events, later reads get `undefined`, and it is left out when `filter` drops it or the iteration ended in another way first, for example with `.return()`. A `for await` loop ignores this value, so read it with `.next()` if you need it.
 
 ### TypedEventEmitter
 
@@ -285,12 +294,12 @@ Exposed for instance checking and sub-classing.
 Example:
 
 ```js
-import {pEvent} from 'p-event';
+import {pEvent, TimeoutError} from 'p-event';
 
 try {
 	await pEvent(emitter, 'finish');
 } catch (error) {
-	if (error instanceof pEvent.TimeoutError) {
+	if (error instanceof TimeoutError) {
 		// Do something specific for timeout errors
 	}
 }
