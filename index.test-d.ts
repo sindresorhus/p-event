@@ -1,11 +1,11 @@
+// `tsd` used to load the `esnext` lib, which has `Array.fromAsync()`.
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference lib="esnext.array" />
 import process from 'node:process';
 import {EventEmitter} from 'node:events';
 import type * as readline from 'node:readline';
 import fs from 'node:fs';
-import {
-	expectType,
-	expectError,
-} from 'tsd';
+import {expectTypeOf, expectError} from 'nz';
 import {
 	pEvent,
 	pEventMultiple,
@@ -70,15 +70,15 @@ class DomEmitter implements EventTarget {
 	): void {} // eslint-disable-line @typescript-eslint/no-empty-function
 }
 
-expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), 'finish'));
-expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), '🦄', value => value > 3));
-expectType<CancelablePromise<Event>>(pEvent(new DomEmitter(), 'finish'));
-expectType<CancelablePromise<Event>>(pEvent(document, 'DOMContentLoaded'));
+expectTypeOf(pEvent(new NodeEmitter(), 'finish')).toBe<CancelablePromise<number>>();
+expectTypeOf(pEvent(new NodeEmitter(), '🦄', value => value > 3)).toBe<CancelablePromise<number>>();
+expectTypeOf(pEvent(new DomEmitter(), 'finish')).toBe<CancelablePromise<Event>>();
+expectTypeOf(pEvent(document, 'DOMContentLoaded')).toBe<CancelablePromise<Event>>();
 
-expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), 'finish', {rejectionEvents: ['error']}));
-expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), 'finish', {timeout: 1}));
-expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), 'finish', {filter: value => value > 3}));
-expectType<CancelablePromise<[number, string]>>(pEvent(new NodeEmitter(), 'finish', {multiArgs: true}));
+expectTypeOf(pEvent(new NodeEmitter(), 'finish', {rejectionEvents: ['error']})).toBe<CancelablePromise<number>>();
+expectTypeOf(pEvent(new NodeEmitter(), 'finish', {timeout: 1})).toBe<CancelablePromise<number>>();
+expectTypeOf(pEvent(new NodeEmitter(), 'finish', {filter: value => value > 3})).toBe<CancelablePromise<number>>();
+expectTypeOf(pEvent(new NodeEmitter(), 'finish', {multiArgs: true})).toBe<CancelablePromise<[number, string]>>();
 void pEvent(new NodeEmitter(), 'finish', {
 	multiArgs: true,
 	filter: ([_, string]: [number, string]) => string === '🦄',
@@ -86,27 +86,27 @@ void pEvent(new NodeEmitter(), 'finish', {
 
 pEvent(new NodeEmitter(), 'finish').cancel();
 
-expectType<CancelablePromise<number[]>>(pEventMultiple(new NodeEmitter(), 'hello', {count: Infinity}));
-expectType<CancelablePromise<number[]>>(pEventMultiple(new NodeEmitter(), 'hello', {
+expectTypeOf(pEventMultiple(new NodeEmitter(), 'hello', {count: Infinity})).toBe<CancelablePromise<number[]>>();
+expectTypeOf(pEventMultiple(new NodeEmitter(), 'hello', {
 	resolveImmediately: true,
 	count: Infinity,
-}));
-expectType<CancelablePromise<Array<[number, string]>>>(pEventMultiple(new NodeEmitter(), 'hello', {
+})).toBe<CancelablePromise<number[]>>();
+expectTypeOf(pEventMultiple(new NodeEmitter(), 'hello', {
 	count: Infinity,
 	multiArgs: true,
-}));
+})).toBe<CancelablePromise<Array<[number, string]>>>();
 void pEventMultiple(new NodeEmitter(), 'finish', {
 	count: Infinity,
 	multiArgs: true,
 	filter: ([_, string]: [number, string]) => string === '🦄',
 });
 
-expectType<AsyncIterableIterator<number>>(pEventIterator(new NodeEmitter(), 'finish'));
-expectType<AsyncIterableIterator<number>>(pEventIterator(new NodeEmitter(), '🦄', value => value > 3));
+expectTypeOf(pEventIterator(new NodeEmitter(), 'finish')).toBe<AsyncIterableIterator<number>>();
+expectTypeOf(pEventIterator(new NodeEmitter(), '🦄', value => value > 3)).toBe<AsyncIterableIterator<number>>();
 
-expectType<AsyncIterableIterator<number>>(pEventIterator(new NodeEmitter(), 'finish', {limit: 1}));
-expectType<AsyncIterableIterator<number>>(pEventIterator(new NodeEmitter(), 'finish', {resolutionEvents: ['finish']}));
-expectType<AsyncIterableIterator<[number, string]>>(pEventIterator(new NodeEmitter(), 'finish', {multiArgs: true}));
+expectTypeOf(pEventIterator(new NodeEmitter(), 'finish', {limit: 1})).toBe<AsyncIterableIterator<number>>();
+expectTypeOf(pEventIterator(new NodeEmitter(), 'finish', {resolutionEvents: ['finish']})).toBe<AsyncIterableIterator<number>>();
+expectTypeOf(pEventIterator(new NodeEmitter(), 'finish', {multiArgs: true})).toBe<AsyncIterableIterator<[number, string]>>();
 
 // The iterator has no promise to time out, so `timeout` was accepted by the type and then ignored at runtime.
 expectError(pEventIterator(new NodeEmitter(), 'finish', {timeout: 1}));
@@ -138,19 +138,19 @@ type MyEvents = {
 declare const typedEmitter: TypedEventEmitter<MyEvents>;
 
 // PEvent with TypedEventEmitter
-expectType<CancelablePromise<Uint8Array>>(pEvent(typedEmitter, 'data'));
-expectType<CancelablePromise<string>>(pEvent(typedEmitter, 'message'));
-expectType<CancelablePromise<[string, number]>>(pEvent(typedEmitter, 'message', {multiArgs: true}));
-expectType<CancelablePromise<Uint8Array>>(pEvent(typedEmitter, 'data', value => value.length > 0));
+expectTypeOf(pEvent(typedEmitter, 'data')).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typedEmitter, 'message')).toBe<CancelablePromise<string>>();
+expectTypeOf(pEvent(typedEmitter, 'message', {multiArgs: true})).toBe<CancelablePromise<[string, number]>>();
+expectTypeOf(pEvent(typedEmitter, 'data', value => value.length > 0)).toBe<CancelablePromise<Uint8Array>>();
 
 // PEventMultiple with TypedEventEmitter
-expectType<CancelablePromise<Uint8Array[]>>(pEventMultiple(typedEmitter, 'data', {count: 3}));
-expectType<CancelablePromise<Array<[string, number]>>>(pEventMultiple(typedEmitter, 'message', {count: 3, multiArgs: true}));
+expectTypeOf(pEventMultiple(typedEmitter, 'data', {count: 3})).toBe<CancelablePromise<Uint8Array[]>>();
+expectTypeOf(pEventMultiple(typedEmitter, 'message', {count: 3, multiArgs: true})).toBe<CancelablePromise<Array<[string, number]>>>();
 
 // PEventIterator with TypedEventEmitter
-expectType<AsyncIterableIterator<Uint8Array>>(pEventIterator(typedEmitter, 'data'));
-expectType<AsyncIterableIterator<[string, number]>>(pEventIterator(typedEmitter, 'message', {multiArgs: true}));
-expectType<AsyncIterableIterator<Uint8Array>>(pEventIterator(typedEmitter, 'data', value => value.length > 0));
+expectTypeOf(pEventIterator(typedEmitter, 'data')).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(pEventIterator(typedEmitter, 'message', {multiArgs: true})).toBe<AsyncIterableIterator<[string, number]>>();
+expectTypeOf(pEventIterator(typedEmitter, 'data', value => value.length > 0)).toBe<AsyncIterableIterator<Uint8Array>>();
 
 // TypedEventEmitter with symbol keys
 const symbolEvent = Symbol('myEvent');
@@ -159,25 +159,25 @@ type SymbolEvents = {
 };
 
 declare const symbolEmitter: TypedEventEmitter<SymbolEvents>;
-expectType<CancelablePromise<number>>(pEvent(symbolEmitter, symbolEvent));
+expectTypeOf(pEvent(symbolEmitter, symbolEvent)).toBe<CancelablePromise<number>>();
 
 // Readline tests
 declare const rl: readline.Interface;
 
 // PEvent with readline
-expectType<CancelablePromise<string>>(pEvent(rl, 'line'));
-expectType<CancelablePromise<string[]>>(pEvent(rl, 'history'));
-expectType<CancelablePromise<[string]>>(pEvent(rl, 'line', {multiArgs: true}));
-expectType<CancelablePromise<string>>(pEvent(rl, 'line', line => line.length > 0));
+expectTypeOf(pEvent(rl, 'line')).toBe<CancelablePromise<string>>();
+expectTypeOf(pEvent(rl, 'history')).toBe<CancelablePromise<string[]>>();
+expectTypeOf(pEvent(rl, 'line', {multiArgs: true})).toBe<CancelablePromise<[string]>>();
+expectTypeOf(pEvent(rl, 'line', line => line.length > 0)).toBe<CancelablePromise<string>>();
 
 // PEventMultiple with readline
-expectType<CancelablePromise<string[]>>(pEventMultiple(rl, 'line', {count: 5}));
-expectType<CancelablePromise<Array<[string]>>>(pEventMultiple(rl, 'line', {count: 5, multiArgs: true}));
+expectTypeOf(pEventMultiple(rl, 'line', {count: 5})).toBe<CancelablePromise<string[]>>();
+expectTypeOf(pEventMultiple(rl, 'line', {count: 5, multiArgs: true})).toBe<CancelablePromise<Array<[string]>>>();
 
 // PEventIterator with readline
-expectType<AsyncIterableIterator<string>>(pEventIterator(rl, 'line'));
-expectType<AsyncIterableIterator<[string]>>(pEventIterator(rl, 'line', {multiArgs: true}));
-expectType<AsyncIterableIterator<string>>(pEventIterator(rl, 'line', line => line.length > 0));
+expectTypeOf(pEventIterator(rl, 'line')).toBe<AsyncIterableIterator<string>>();
+expectTypeOf(pEventIterator(rl, 'line', {multiArgs: true})).toBe<AsyncIterableIterator<[string]>>();
+expectTypeOf(pEventIterator(rl, 'line', line => line.length > 0)).toBe<AsyncIterableIterator<string>>();
 
 // Overload resolution for shapes that are easy to get wrong.
 declare const looseEmitter: {
@@ -185,18 +185,18 @@ declare const looseEmitter: {
 	off(event: string, listener: (...arguments_: unknown[]) => void): void;
 };
 
-expectType<CancelablePromise<unknown>>(pEvent(looseEmitter, 'anything', {}));
-expectType<CancelablePromise<unknown>>(pEvent(looseEmitter, 'anything', {multiArgs: false}));
-expectType<CancelablePromise<unknown[][]>>(pEventMultiple(looseEmitter, 'anything', {count: 1, multiArgs: true}));
-expectType<AsyncIterableIterator<unknown[]>>(pEventIterator(looseEmitter, 'anything', {limit: 1, multiArgs: true}));
+expectTypeOf(pEvent(looseEmitter, 'anything', {})).toBe<CancelablePromise<unknown>>();
+expectTypeOf(pEvent(looseEmitter, 'anything', {multiArgs: false})).toBe<CancelablePromise<unknown>>();
+expectTypeOf(pEventMultiple(looseEmitter, 'anything', {count: 1, multiArgs: true})).toBe<CancelablePromise<unknown[][]>>();
+expectTypeOf(pEventIterator(looseEmitter, 'anything', {limit: 1, multiArgs: true})).toBe<AsyncIterableIterator<unknown[]>>();
 
 // `multiArgs: false` must not select the multi-argument overload.
-expectType<CancelablePromise<number>>(pEvent(new NodeEmitter(), 'finish', {multiArgs: false}));
+expectTypeOf(pEvent(new NodeEmitter(), 'finish', {multiArgs: false})).toBe<CancelablePromise<number>>();
 
 // The returned iterator is a real async iterable, so it can be drained or looped over.
 const drain = async () => Array.fromAsync(pEventIterator(new NodeEmitter(), 'finish', {limit: 2}));
 
-expectType<() => Promise<number[]>>(drain);
+expectTypeOf(drain).toBe<() => Promise<number[]>>();
 
 // `.cancel()` is available on every returned promise, including the ones the types narrow.
 pEventMultiple(new NodeEmitter(), 'finish', {count: 1}).cancel();
@@ -216,44 +216,44 @@ type Events = {
 };
 
 declare const typed: TypedEventEmitter<Events>;
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data'));
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data', {}));
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data', {multiArgs: false}));
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data', {rejectionEvents: ['error']}));
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data', {timeout: 1}));
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data', {signal: AbortSignal.timeout(1)}));
-expectType<CancelablePromise<[Uint8Array]>>(pEvent(typed, 'data', {multiArgs: true}));
-expectType<CancelablePromise<[Uint8Array]>>(pEvent(typed, 'data', {multiArgs: true, rejectionEvents: ['error']}));
-expectType<CancelablePromise<[Uint8Array]>>(pEvent(typed, 'data', {multiArgs: true, rejectionMultiArgs: true}));
-expectType<CancelablePromise<[Uint8Array]>>(pEvent(typed, 'data', {multiArgs: true, timeout: 1}));
+expectTypeOf(pEvent(typed, 'data')).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typed, 'data', {})).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typed, 'data', {multiArgs: false})).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typed, 'data', {rejectionEvents: ['error']})).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typed, 'data', {timeout: 1})).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typed, 'data', {signal: AbortSignal.timeout(1)})).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEvent(typed, 'data', {multiArgs: true})).toBe<CancelablePromise<[Uint8Array]>>();
+expectTypeOf(pEvent(typed, 'data', {multiArgs: true, rejectionEvents: ['error']})).toBe<CancelablePromise<[Uint8Array]>>();
+expectTypeOf(pEvent(typed, 'data', {multiArgs: true, rejectionMultiArgs: true})).toBe<CancelablePromise<[Uint8Array]>>();
+expectTypeOf(pEvent(typed, 'data', {multiArgs: true, timeout: 1})).toBe<CancelablePromise<[Uint8Array]>>();
 
 // An event with no arguments carries nothing, so its first argument is `undefined`.
-expectType<CancelablePromise<undefined>>(pEvent(typed, 'silent'));
+expectTypeOf(pEvent(typed, 'silent')).toBe<CancelablePromise<undefined>>();
 
 // An array of names falls back to the loose overload, which is the documented limitation.
-expectType<CancelablePromise<unknown>>(pEvent(typed, ['data']));
-expectType<CancelablePromise<unknown>>(pEvent(typed, ['data', 'message']));
-expectType<CancelablePromise<unknown[]>>(pEvent(typed, ['data', 'message'], {multiArgs: true}));
+expectTypeOf(pEvent(typed, ['data'])).toBe<CancelablePromise<unknown>>();
+expectTypeOf(pEvent(typed, ['data', 'message'])).toBe<CancelablePromise<unknown>>();
+expectTypeOf(pEvent(typed, ['data', 'message'], {multiArgs: true})).toBe<CancelablePromise<unknown[]>>();
 
 // The multiple and iterator forms.
-expectType<CancelablePromise<Uint8Array[]>>(pEventMultiple(typed, 'data', {count: 1}));
-expectType<CancelablePromise<Array<[Uint8Array]>>>(pEventMultiple(typed, 'data', {count: 1, multiArgs: true}));
-expectType<AsyncIterableIterator<Uint8Array>>(pEventIterator(typed, 'data'));
-expectType<AsyncIterableIterator<Uint8Array>>(pEventIterator(typed, 'data', {limit: 1}));
-expectType<AsyncIterableIterator<Uint8Array>>(pEventIterator(typed, 'data', {resolutionEvents: ['message']}));
-expectType<AsyncIterableIterator<[Uint8Array]>>(pEventIterator(typed, 'data', {multiArgs: true}));
-expectType<AsyncIterableIterator<[Uint8Array]>>(pEventIterator(typed, 'data', {multiArgs: true, limit: 1}));
+expectTypeOf(pEventMultiple(typed, 'data', {count: 1})).toBe<CancelablePromise<Uint8Array[]>>();
+expectTypeOf(pEventMultiple(typed, 'data', {count: 1, multiArgs: true})).toBe<CancelablePromise<Array<[Uint8Array]>>>();
+expectTypeOf(pEventIterator(typed, 'data')).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(pEventIterator(typed, 'data', {limit: 1})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(pEventIterator(typed, 'data', {resolutionEvents: ['message']})).toBe<AsyncIterableIterator<Uint8Array>>();
+expectTypeOf(pEventIterator(typed, 'data', {multiArgs: true})).toBe<AsyncIterableIterator<[Uint8Array]>>();
+expectTypeOf(pEventIterator(typed, 'data', {multiArgs: true, limit: 1})).toBe<AsyncIterableIterator<[Uint8Array]>>();
 
 // The positional filter form.
-expectType<CancelablePromise<Uint8Array>>(pEvent(typed, 'data', value => value.length > 0));
-expectType<AsyncIterableIterator<Uint8Array>>(pEventIterator(typed, 'data', value => value.length > 0));
+expectTypeOf(pEvent(typed, 'data', value => value.length > 0)).toBe<CancelablePromise<Uint8Array>>();
+expectTypeOf(pEventIterator(typed, 'data', value => value.length > 0)).toBe<AsyncIterableIterator<Uint8Array>>();
 
 // Readline, one name and the array form.
 // A `history` event carries one argument that is itself an array, so each item is that array.
-expectType<CancelablePromise<string[][]>>(pEventMultiple(rl, 'history', {count: 1}));
-expectType<AsyncIterableIterator<string>>(pEventIterator(rl, 'line', {limit: 1}));
-expectType<CancelablePromise<unknown>>(pEvent(rl, ['line']));
-expectType<CancelablePromise<unknown>>(pEvent(rl, ['line', 'history']));
+expectTypeOf(pEventMultiple(rl, 'history', {count: 1})).toBe<CancelablePromise<string[][]>>();
+expectTypeOf(pEventIterator(rl, 'line', {limit: 1})).toBe<AsyncIterableIterator<string>>();
+expectTypeOf(pEvent(rl, ['line'])).toBe<CancelablePromise<unknown>>();
+expectTypeOf(pEvent(rl, ['line', 'history'])).toBe<CancelablePromise<unknown>>();
 
 // A DOM emitter, whose listener only receives an Event.
 class Dom implements EventTarget {
@@ -270,14 +270,14 @@ class Dom implements EventTarget {
 	}
 }
 
-expectType<CancelablePromise<Event>>(pEvent(new Dom(), 'done'));
+expectTypeOf(pEvent(new Dom(), 'done')).toBe<CancelablePromise<Event>>();
 // With `multiArgs` the value is the whole argument list.
-expectType<CancelablePromise<[evt: Event]>>(pEvent(new Dom(), 'done', {multiArgs: true}));
-expectType<AsyncIterableIterator<Event>>(pEventIterator(new Dom(), 'done', {limit: 1}));
+expectTypeOf(pEvent(new Dom(), 'done', {multiArgs: true})).toBe<CancelablePromise<[evt: Event]>>();
+expectTypeOf(pEventIterator(new Dom(), 'done', {limit: 1})).toBe<AsyncIterableIterator<Event>>();
 
 // A plain Node emitter with no event map.
-expectType<CancelablePromise<unknown>>(pEvent(new EventEmitter(), 'anything'));
-expectType<CancelablePromise<unknown[]>>(pEvent(new EventEmitter(), 'anything', {multiArgs: true}));
+expectTypeOf(pEvent(new EventEmitter(), 'anything')).toBe<CancelablePromise<unknown>>();
+expectTypeOf(pEvent(new EventEmitter(), 'anything', {multiArgs: true})).toBe<CancelablePromise<unknown[]>>();
 
 type GridEvents = {
 	data: [value: string, tail: string];
@@ -286,29 +286,29 @@ type GridEvents = {
 declare const gridTyped: TypedEventEmitter<GridEvents>;
 
 // The whole option grid, checked against what a run of each shape actually resolved to. With `multiArgs` the definitions keep the argument list as a labelled tuple, which is narrower than a plain array and is what the runtime hands over.
-expectType<CancelablePromise<string>>(pEvent(gridTyped, 'data'));
-expectType<CancelablePromise<[value: string, tail: string]>>(pEvent(gridTyped, 'data', {multiArgs: true}));
-expectType<CancelablePromise<string>>(pEvent(gridTyped, 'data', {rejectionEvents: ['error']}));
-expectType<CancelablePromise<string>>(pEvent(gridTyped, 'data', {rejectionMultiArgs: true}));
-expectType<CancelablePromise<[value: string, tail: string]>>(pEvent(gridTyped, 'data', {multiArgs: true, rejectionMultiArgs: true}));
-expectType<CancelablePromise<[value: string, tail: string]>>(pEvent(gridTyped, 'data', {multiArgs: true, filter: () => true}));
-expectType<CancelablePromise<string>>(pEvent(gridTyped, 'data', {filter: () => true}));
+expectTypeOf(pEvent(gridTyped, 'data')).toBe<CancelablePromise<string>>();
+expectTypeOf(pEvent(gridTyped, 'data', {multiArgs: true})).toBe<CancelablePromise<[value: string, tail: string]>>();
+expectTypeOf(pEvent(gridTyped, 'data', {rejectionEvents: ['error']})).toBe<CancelablePromise<string>>();
+expectTypeOf(pEvent(gridTyped, 'data', {rejectionMultiArgs: true})).toBe<CancelablePromise<string>>();
+expectTypeOf(pEvent(gridTyped, 'data', {multiArgs: true, rejectionMultiArgs: true})).toBe<CancelablePromise<[value: string, tail: string]>>();
+expectTypeOf(pEvent(gridTyped, 'data', {multiArgs: true, filter: () => true})).toBe<CancelablePromise<[value: string, tail: string]>>();
+expectTypeOf(pEvent(gridTyped, 'data', {filter: () => true})).toBe<CancelablePromise<string>>();
 
-expectType<CancelablePromise<string>>(pEvent(gridTyped, 'data', () => true));
-expectType<CancelablePromise<Event>>(pEvent(new Dom(), 'done', () => true));
+expectTypeOf(pEvent(gridTyped, 'data', () => true)).toBe<CancelablePromise<string>>();
+expectTypeOf(pEvent(new Dom(), 'done', () => true)).toBe<CancelablePromise<Event>>();
 
-expectType<CancelablePromise<string[]>>(pEventMultiple(gridTyped, 'data', {count: 1}));
-expectType<CancelablePromise<Array<[value: string, tail: string]>>>(pEventMultiple(gridTyped, 'data', {count: 1, multiArgs: true}));
-expectType<CancelablePromise<Array<[value: string, tail: string]>>>(pEventMultiple(gridTyped, 'data', {count: 1, multiArgs: true, rejectionMultiArgs: true}));
-expectType<CancelablePromise<string[]>>(pEventMultiple(gridTyped, 'data', {count: 1, rejectionEvents: ['error']}));
-expectType<CancelablePromise<string[]>>(pEventMultiple(gridTyped, 'data', {count: 1, filter: () => true}));
+expectTypeOf(pEventMultiple(gridTyped, 'data', {count: 1})).toBe<CancelablePromise<string[]>>();
+expectTypeOf(pEventMultiple(gridTyped, 'data', {count: 1, multiArgs: true})).toBe<CancelablePromise<Array<[value: string, tail: string]>>>();
+expectTypeOf(pEventMultiple(gridTyped, 'data', {count: 1, multiArgs: true, rejectionMultiArgs: true})).toBe<CancelablePromise<Array<[value: string, tail: string]>>>();
+expectTypeOf(pEventMultiple(gridTyped, 'data', {count: 1, rejectionEvents: ['error']})).toBe<CancelablePromise<string[]>>();
+expectTypeOf(pEventMultiple(gridTyped, 'data', {count: 1, filter: () => true})).toBe<CancelablePromise<string[]>>();
 
-expectType<AsyncIterableIterator<string>>(pEventIterator(gridTyped, 'data'));
-expectType<AsyncIterableIterator<[value: string, tail: string]>>(pEventIterator(gridTyped, 'data', {multiArgs: true}));
-expectType<AsyncIterableIterator<[value: string, tail: string]>>(pEventIterator(gridTyped, 'data', {limit: 1, multiArgs: true}));
-expectType<AsyncIterableIterator<[value: string, tail: string]>>(pEventIterator(gridTyped, 'data', {multiArgs: true, rejectionMultiArgs: true}));
-expectType<AsyncIterableIterator<string>>(pEventIterator(gridTyped, 'data', {rejectionEvents: ['error']}));
-expectType<AsyncIterableIterator<Event>>(pEventIterator(new Dom(), 'done', () => true));
+expectTypeOf(pEventIterator(gridTyped, 'data')).toBe<AsyncIterableIterator<string>>();
+expectTypeOf(pEventIterator(gridTyped, 'data', {multiArgs: true})).toBe<AsyncIterableIterator<[value: string, tail: string]>>();
+expectTypeOf(pEventIterator(gridTyped, 'data', {limit: 1, multiArgs: true})).toBe<AsyncIterableIterator<[value: string, tail: string]>>();
+expectTypeOf(pEventIterator(gridTyped, 'data', {multiArgs: true, rejectionMultiArgs: true})).toBe<AsyncIterableIterator<[value: string, tail: string]>>();
+expectTypeOf(pEventIterator(gridTyped, 'data', {rejectionEvents: ['error']})).toBe<AsyncIterableIterator<string>>();
+expectTypeOf(pEventIterator(new Dom(), 'done', () => true)).toBe<AsyncIterableIterator<Event>>();
 
-expectType<CancelablePromise<Array<[string]>>>(pEventMultiple(rl, 'line', {count: 1, multiArgs: true}));
-expectType<AsyncIterableIterator<[string]>>(pEventIterator(rl, 'line', {limit: 1, multiArgs: true}));
+expectTypeOf(pEventMultiple(rl, 'line', {count: 1, multiArgs: true})).toBe<CancelablePromise<Array<[string]>>>();
+expectTypeOf(pEventIterator(rl, 'line', {limit: 1, multiArgs: true})).toBe<AsyncIterableIterator<[string]>>();
