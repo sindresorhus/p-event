@@ -44,16 +44,17 @@ const listenerHandlers = families => {
 	return handlers;
 };
 
-// Attaches the abort handler first, so an emitter that fires the abort itself while a listener is being attached still reaches the caller. An emitter that hands over buffered events the moment a listener is attached can end the call part way through, and anything attached after that would never be removed, so attaching stops once the call is done.
-const attachListeners = ({addListener, handlers, signal, abortHandler, isDone}) => {
+// Attaches the abort handler first, so an emitter that fires the abort itself while a listener is being attached still reaches the caller. An emitter that hands over buffered events the moment a listener is attached can end the call part way through, and anything attached after that would never be removed, so attaching stops once the call is done. The call can also end before the emitter stores the listener, since Node's `EventEmitter` emits `newListener` first, so the cleanup misses that listener and it is removed here.
+const attachListeners = ({addListener, removeListener, handlers, signal, abortHandler, isDone}) => {
 	signal?.addEventListener('abort', abortHandler, {once: true});
 
 	for (const [eventName, listener] of handlers) {
+		addListener(eventName, listener);
+
 		if (isDone()) {
+			removeListener(eventName, listener);
 			return;
 		}
-
-		addListener(eventName, listener);
 	}
 };
 

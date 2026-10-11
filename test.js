@@ -1640,6 +1640,34 @@ test('an abort while the listeners are being attached still reaches the caller',
 	assert.deepEqual(outcomes, ['during attach', 'during attach', 'during attach']);
 });
 
+test('an abort from `newListener` does not leave the listener being attached behind', async () => {
+	// Node's `EventEmitter` emits `newListener` before it stores the listener, so an abort from there ran the cleanup first, and the listener was stored after it and never removed.
+	const starts = [
+		(emitter, signal) => pEvent(emitter, 'data', {signal}),
+		(emitter, signal) => pEventMultiple(emitter, 'data', {count: 1, signal}),
+		(emitter, signal) => pEventIterator(emitter, 'data', {limit: 1, signal}).next(),
+	];
+	const own = () => {};
+
+	const leftovers = await Promise.all(starts.flatMap(start => ['data', 'error'].map(async abortOn => {
+		const controller = new AbortController();
+		const emitter = new EventEmitter();
+		emitter.on('data', own);
+		emitter.on('error', own);
+		emitter.on('newListener', eventName => {
+			if (eventName === abortOn) {
+				controller.abort(new Error('during newListener'));
+			}
+		});
+
+		const outcome = await settledMessage(start(emitter, controller.signal));
+
+		return [outcome, emitter.listeners('data'), emitter.listeners('error'), abortListenerCount(controller.signal)];
+	})));
+
+	assert.deepEqual(leftovers, Array.from({length: starts.length * 2}, () => ['during newListener', [own], [own], 0]));
+});
+
 test('an explicitly `undefined` option reads as not set', async () => {
 	// The caller's options were spread over the defaults, so an explicit `undefined` replaced each documented default instead of being skipped. That is the shape a partial options object has when a field is optional, and `rejectionEvents` ended up as a listener on the literal name `"undefined"` with no `error` listener at all.
 	const emitter = new EventEmitter();
