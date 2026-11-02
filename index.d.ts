@@ -72,7 +72,7 @@ export type Options<EmittedType extends unknown | unknown[]> = {
 	readonly multiArgs?: boolean;
 
 	/**
-	The time in milliseconds before timing out. Must be greater than zero.
+	The time in milliseconds before timing out. Must be greater than zero. A value above `2 ** 31 - 1` (about 24.8 days) never times out, the same as `Infinity`.
 
 	@default Infinity
 	*/

@@ -46,7 +46,7 @@
 		"bluebird"
 	],
 	"dependencies": {
-		"p-timeout": "^7.0.2"
+		"p-timeout": "^8.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^24.3.1",

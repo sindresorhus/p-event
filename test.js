@@ -1528,8 +1528,30 @@ test('an infinite `timeout` does not stop listening for a `resolveImmediately` p
 	promise.cancel();
 });
 
+test('a `timeout` above the timer range never fires, the same as `Infinity`', async () => {
+	// Node clamps a delay above `2 ** 31 - 1` milliseconds to 1 millisecond, so the deadline fired at once.
+	const timeout = 2 ** 31;
+	const emitter = new EventEmitter();
+	const immediate = pEventMultiple(emitter, 'test', {
+		count: Infinity,
+		resolveImmediately: true,
+		timeout,
+	});
+	const single = pEvent(emitter, 'test', {timeout});
+
+	assert.deepEqual(await immediate, []);
+	await delay(50);
+	assert.equal(emitter.listenerCount('test'), 2);
+
+	emitter.emit('test', 'still listening');
+	assert.deepEqual(await immediate, ['still listening']);
+	assert.equal(await single, 'still listening');
+
+	immediate.cancel();
+});
+
 test('a `timeout` that is not a positive number is rejected either way', async () => {
-	// `p-timeout` rejects the deadline from inside its own executor, before it subscribes to the promise, so the listeners were already attached by then and nothing ever removed them.
+	// `p-timeout` rejects an invalid deadline without cancelling the promise, so the listeners were already attached by then and nothing ever removed them.
 	const emitter = new EventEmitter();
 	const cases = [0, -1, NaN].flatMap(timeout => [true, false].map(resolveImmediately => ({timeout, resolveImmediately})));
 	const rejections = await Promise.all(cases.map(({timeout, resolveImmediately}) => settledMessage(pEventMultiple(emitter, 'test', {count: 1, resolveImmediately, timeout}))));

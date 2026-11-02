@@ -141,7 +141,7 @@ try {
 Type: `number` *(greater than zero)*\
 Default: `Infinity`
 
-Time in milliseconds before timing out.
+Time in milliseconds before timing out. A value above `2 ** 31 - 1` (about 24.8 days) never times out, the same as `Infinity`.
 
 ##### filter
 

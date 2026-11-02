@@ -113,7 +113,7 @@ export function pEventMultiple(emitter, event, options) {
 			throw new TypeError('The `count` option should be at least 0 or more');
 		}
 
-		// Checked here, before anything is attached, because `p-timeout` throws for it before it subscribes to this promise, which would leave the listeners attached and this rejection unhandled.
+		// Checked here, before anything is attached, because `p-timeout` rejects an invalid deadline without cancelling this promise, which would leave the listeners attached.
 		if (typeof options.timeout === 'number'
 			&& !(options.timeout > 0)) {
 			throw new TypeError(`Expected the \`timeout\` option to be a positive number, got \`${options.timeout}\``);
@@ -204,8 +204,8 @@ export function pEventMultiple(emitter, event, options) {
 			return;
 		}
 
-		// The promise is fulfilled right away, and `pTimeout` clears its timer as soon as the promise settles, so the deadline is tracked here instead. An infinite deadline has nothing to wait for, and `setTimeout` would clamp it to 1 millisecond.
-		if (Number.isFinite(options.timeout)) {
+		// The promise is fulfilled right away, and `pTimeout` clears its timer as soon as the promise settles, so the deadline is tracked here instead. An infinite deadline has nothing to wait for, and neither does one above `2 ** 31 - 1` milliseconds, the largest delay `setTimeout` can represent. `setTimeout` would clamp either to 1 millisecond. This matches `pTimeout`.
+		if (Number.isFinite(options.timeout) && options.timeout <= (2 ** 31) - 1) {
 			deadlineTimer = setTimeout(cancel, options.timeout);
 		}
 
